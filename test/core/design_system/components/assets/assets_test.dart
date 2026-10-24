@@ -21,6 +21,15 @@ void main() {
       expect(find.bySemanticsLabel('Add item'), findsOneWidget);
     });
 
+    testWidgets('extra-large icon uses the display check size', (tester) async {
+      await pumpSrWidget(
+        tester,
+        const SrIcon(Icons.check_rounded, size: SrIconSize.extraLarge),
+      );
+
+      expect(tester.widget<Icon>(find.byIcon(Icons.check_rounded)).size, 32);
+    });
+
     testWidgets('image placeholder respects its aspect ratio', (tester) async {
       const key = Key('image-placeholder');
 

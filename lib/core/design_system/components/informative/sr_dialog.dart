@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'package:sr_pos/core/design_system/components/assets/sr_icon.dart';
 import 'package:sr_pos/core/design_system/components/control/sr_button.dart';
+import 'package:sr_pos/core/design_system/components/shared/sr_component_metrics.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_radii.dart';
+import 'package:sr_pos/core/design_system/foundations/sr_sizing.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_spacing.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_typography.dart';
 
@@ -27,18 +30,41 @@ class SrDialog extends StatelessWidget {
     this.message,
     this.header,
     this.semanticLabel,
+    this.children = const [],
+    this.onClose,
+    this.closeSemanticLabel = 'Tutup dialog',
+    this.compact = false,
+    this.maxWidth,
     super.key,
-  }) : assert(actions.length == 2 || actions.length == 3);
+  }) : assert(actions.length == 2 || actions.length == 3),
+       assert(maxWidth == null || maxWidth >= SrSizing.size40 * 7);
 
   final String title;
   final String? message;
   final Widget? header;
+  final List<Widget> children;
   final Iterable<SrDialogAction> actions;
   final String? semanticLabel;
+
+  /// Optional close affordance placed in the dialog's upper-right corner.
+  final VoidCallback? onClose;
+
+  /// Accessible label and tooltip shown for the optional close affordance.
+  final String closeSemanticLabel;
+
+  /// Reduces dialog insets and section spacing for denser workflows.
+  final bool compact;
+
+  /// Optional per-dialog width cap; defaults to the shared dialog width.
+  final double? maxWidth;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final contentPadding = compact ? SrSpacing.space16 : SrSpacing.space24;
+    final headerSpacing = compact ? SrSpacing.space8 : SrSpacing.space16;
+    final contentSpacing = compact ? SrSpacing.space4 : SrSpacing.space8;
+    final actionSpacing = compact ? SrSpacing.space16 : SrSpacing.space24;
 
     return Semantics(
       label: semanticLabel,
@@ -51,51 +77,84 @@ class SrDialog extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(SrRadii.large),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(SrSpacing.space24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (header != null) ...[
-                Align(child: header),
-                const SizedBox(height: SrSpacing.space16),
-              ],
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: SrTypography.heading2.copyWith(color: colors.onSurface),
+        constraints: BoxConstraints(
+          minWidth: SrSizing.size40 * 7,
+          maxWidth: maxWidth ?? SrComponentMetrics.dialogMaxWidth,
+        ),
+        child: Stack(
+          children: [
+            Padding(
+              padding: EdgeInsets.all(contentPadding),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (header != null) ...[
+                    Align(child: header),
+                    SizedBox(height: headerSpacing),
+                  ],
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: SrTypography.heading2.copyWith(
+                      color: colors.onSurface,
+                    ),
+                  ),
+                  if (message case final dialogMessage?) ...[
+                    SizedBox(height: contentSpacing),
+                    Text(
+                      dialogMessage,
+                      textAlign: TextAlign.center,
+                      style: SrTypography.bodyMedium.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                  for (final child in children) ...[
+                    SizedBox(height: contentSpacing),
+                    child,
+                  ],
+                  SizedBox(height: actionSpacing),
+                  if (actions.length == 2)
+                    Row(
+                      children: [
+                        Expanded(child: _ActionButton(action: actions.first)),
+                        const SizedBox(width: SrSpacing.space8),
+                        Expanded(child: _ActionButton(action: actions.last)),
+                      ],
+                    )
+                  else
+                    ...actions.indexed.map((entry) {
+                      return Padding(
+                        padding: EdgeInsets.only(
+                          top: entry.$1 == 0 ? 0 : SrSpacing.space8,
+                        ),
+                        child: _ActionButton(action: entry.$2),
+                      );
+                    }),
+                ],
               ),
-              if (message case final dialogMessage?) ...[
-                const SizedBox(height: SrSpacing.space8),
-                Text(
-                  dialogMessage,
-                  textAlign: TextAlign.center,
-                  style: SrTypography.bodyMedium.copyWith(
+            ),
+            if (onClose != null)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: IconButton(
+                  onPressed: onClose,
+                  tooltip: closeSemanticLabel,
+                  constraints: const BoxConstraints(
+                    minWidth: SrSizing.minimumTouchTarget,
+                    minHeight: SrSizing.minimumTouchTarget,
+                  ),
+                  padding: EdgeInsets.zero,
+                  icon: SrIcon(
+                    Icons.close_rounded,
+                    size: SrIconSize.medium,
                     color: colors.onSurfaceVariant,
                   ),
                 ),
-              ],
-              const SizedBox(height: SrSpacing.space24),
-              if (actions.length == 2)
-                Row(
-                  children: [
-                    Expanded(child: _ActionButton(action: actions.first)),
-                    const SizedBox(width: SrSpacing.space8),
-                    Expanded(child: _ActionButton(action: actions.last)),
-                  ],
-                )
-              else
-                ...actions.indexed.map((entry) {
-                  return Padding(
-                    padding: EdgeInsets.only(
-                      top: entry.$1 == 0 ? 0 : SrSpacing.space8,
-                    ),
-                    child: _ActionButton(action: entry.$2),
-                  );
-                }),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );

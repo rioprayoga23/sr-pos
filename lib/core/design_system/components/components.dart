@@ -9,3 +9,4 @@ export 'input/input.dart';
 export 'map/map.dart';
 export 'navigation/navigation.dart';
 export 'progress/progress.dart';
+export 'sr_component_size.dart';

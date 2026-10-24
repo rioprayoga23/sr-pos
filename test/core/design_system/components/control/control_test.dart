@@ -40,6 +40,59 @@ void main() {
       expect(find.bySemanticsLabel('Saving in progress'), findsOneWidget);
     });
 
+    testWidgets('small button keeps the 48 pixel touch target', (tester) async {
+      await pumpSrWidget(
+        tester,
+        const SrButton(
+          label: 'Compact action',
+          size: SrComponentSize.small,
+          onPressed: _noop,
+        ),
+      );
+
+      expect(
+        tester.getSize(find.byType(FilledButton)).height,
+        greaterThanOrEqualTo(48),
+      );
+    });
+
+    testWidgets('destructive button applies error color to label and icon', (
+      tester,
+    ) async {
+      var pressed = false;
+
+      await pumpSrWidget(
+        tester,
+        SrButton(
+          label: 'Hapus',
+          variant: SrButtonVariant.destructive,
+          leadingIcon: const Icon(Icons.delete_outline_rounded),
+          size: SrComponentSize.small,
+          onPressed: () => pressed = true,
+        ),
+      );
+
+      final colors = Theme.of(tester.element(find.byType(SrButton)))
+          .colorScheme;
+      final button = tester.widget<TextButton>(find.byType(TextButton));
+      expect(
+        button.style!.foregroundColor!.resolve(const <WidgetState>{}),
+        colors.error,
+      );
+      expect(
+        IconTheme.of(tester.element(find.byIcon(Icons.delete_outline_rounded)))
+            .color,
+        colors.error,
+      );
+      expect(
+        tester.getSize(find.byType(TextButton)).height,
+        greaterThanOrEqualTo(48),
+      );
+
+      await tester.tap(find.text('Hapus'));
+      expect(pressed, isTrue);
+    });
+
     testWidgets('content switcher reports the selected value', (tester) async {
       String? selected;
 

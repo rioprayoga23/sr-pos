@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:sr_pos/core/design_system/components/sr_component_size.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_radii.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_sizing.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_spacing.dart';
@@ -26,6 +27,7 @@ class SrContentSwitcher<T> extends StatelessWidget {
     required this.selectedValue,
     this.onChanged,
     this.semanticLabel,
+    this.size = SrComponentSize.medium,
     super.key,
   }) : assert(items.length >= 2 && items.length <= 4);
 
@@ -33,6 +35,7 @@ class SrContentSwitcher<T> extends StatelessWidget {
   final T selectedValue;
   final ValueChanged<T>? onChanged;
   final String? semanticLabel;
+  final SrComponentSize size;
 
   @override
   Widget build(BuildContext context) {
@@ -83,9 +86,11 @@ class SrContentSwitcher<T> extends StatelessWidget {
                                 minHeight: kMinInteractiveDimension,
                               ),
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(
+                                padding: EdgeInsets.symmetric(
                                   horizontal: SrSpacing.space8,
-                                  vertical: SrSpacing.space12,
+                                  vertical: size == SrComponentSize.small
+                                      ? SrSpacing.space8
+                                      : SrSpacing.space12,
                                 ),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,

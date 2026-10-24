@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sr_pos/core/design_system/components/sr_component_size.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_radii.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_spacing.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_typography.dart';
@@ -14,6 +15,7 @@ class SrNumberInput extends StatelessWidget {
     this.label,
     this.errorText,
     this.semanticLabel,
+    this.size = SrComponentSize.medium,
     super.key,
   }) : assert(step > 0),
        assert(min == null || max == null || min <= max),
@@ -27,6 +29,7 @@ class SrNumberInput extends StatelessWidget {
   final String? label;
   final String? errorText;
   final String? semanticLabel;
+  final SrComponentSize size;
   final ValueChanged<int>? onChanged;
 
   @override
@@ -73,9 +76,15 @@ class SrNumberInput extends StatelessWidget {
               child: Center(
                 child: Text(
                   value.toString(),
-                  style: SrTypography.actionLarge.copyWith(
-                    color: enabled ? colors.onSurface : theme.disabledColor,
-                  ),
+                  style:
+                      (size == SrComponentSize.small
+                              ? SrTypography.actionMedium
+                              : SrTypography.actionLarge)
+                          .copyWith(
+                            color: enabled
+                                ? colors.onSurface
+                                : theme.disabledColor,
+                          ),
                 ),
               ),
             ),
@@ -96,11 +105,19 @@ class SrNumberInput extends StatelessWidget {
         if (label case final label?) ...[
           Text(
             label,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: enabled ? colors.onSurface : theme.disabledColor,
-            ),
+            style:
+                (size == SrComponentSize.small
+                        ? SrTypography.actionMedium
+                        : theme.textTheme.bodyMedium)
+                    ?.copyWith(
+                      color: enabled ? colors.onSurface : theme.disabledColor,
+                    ),
           ),
-          const SizedBox(height: SrSpacing.space8),
+          SizedBox(
+            height: size == SrComponentSize.small
+                ? SrSpacing.space4
+                : SrSpacing.space8,
+          ),
         ],
         stepper,
         if (errorText case final errorText?) ...[

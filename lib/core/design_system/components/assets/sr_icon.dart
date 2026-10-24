@@ -5,7 +5,8 @@ import 'package:sr_pos/core/design_system/foundations/sr_sizing.dart';
 enum SrIconSize {
   small(SrSizing.iconSmall),
   medium(SrSizing.iconMedium),
-  large(SrSizing.iconLarge);
+  large(SrSizing.iconLarge),
+  extraLarge(SrSizing.size32);
 
   const SrIconSize(this.value);
 

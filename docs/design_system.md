@@ -132,8 +132,14 @@ nilai visual lain yang belum diekstrak.
 - **Button**: 
   Primary, Secondary, dan Tertiary. Figma menulis varian ketiga sebagai
   `Terciary`; implementasi memakai ejaan `Tertiary` dan menyimpan catatan typo
-  ini untuk traceability.
-- **Dialog**: varian 2-button dan 3-button.
+  ini untuk traceability. Implementasi SR-POS juga menyediakan variant
+  `destructive` (bukan variant Figma) dengan foreground dari semantic
+  `ColorScheme.error`, memakai layout text-button yang sama.
+- **Dialog**: varian 2-button dan 3-button. `SrDialog` accepts flexible body
+  `children` between its title/message and actions, an optional upper-right
+  close affordance, compact spacing, and a per-dialog width cap. The default
+  maximum width of 640 logical pixels is an implementation assumption for
+  tablet/desktop layouts.
 - **Badge**: dot memakai lingkaran `8 × 8`; count satu digit memakai
   `CircleBorder` pada constraint persegi `24 × 24`; count lebih panjang dan
   label memakai bentuk pill dengan tinggi minimum `24`.
@@ -143,9 +149,11 @@ nilai visual lain yang belum diekstrak.
 - **Tabs**: `.Tab Item` dan `Tabs`.
 - **Search Bar**:
   state empty dengan placeholder, focused dengan text/cursor, dan filled dengan
-  text. Property yang terkonfirmasi adalah `Placeholder` dan `Text`. Placeholder
-  dan value memakai token tipografi yang sama, `Body M / 14 px`; perbedaannya
-  hanya warna semantik.
+  text. Property yang terkonfirmasi adalah `Placeholder` dan `Text`. Semua input
+  teks dengan placeholder (`Text Field`, `Text Area`, `Dropdown`, `Search Bar`,
+  dan `Message Input`) menurunkan metrik tipografinya dari style value aktif;
+  placeholder dan label yang tampil di dalam field saat kosong memakai
+  ukuran/metrics yang sama dan hanya berbeda pada warna semantik.
 - **Card**:
   komposisi vertical dengan media/icon/avatar, title, subtitle, description,
   optional tag, dan optional button; komposisi horizontal dengan
@@ -161,6 +169,28 @@ theme/token. Pengembangan varian baru tetap harus mencatat:
 - property/variant Figma dan nilai default;
 - token warna, tipografi, radius, spacing, border, dan icon yang digunakan;
 - perilaku interaksi dan semantics.
+
+### Layout dan density Sale tablet
+
+Komposisi Sale mengadaptasi shell dan katalog dari project `yosher-pos/pos-fe`:
+header selebar layar, rail navigasi ikon dan label, filter kategori horizontal,
+pencarian dengan filter rekomendasi, katalog di kiri, serta panel pesanan di
+kanan. Untuk tablet portrait, katalog dan panel pesanan ditumpuk. Sidebar
+dimulai pada lebar 208 logical pixel (asumsi implementasi) agar label tetap
+terbaca dengan ruang lebih ringkas, dan dapat diringkas menjadi rail ikon 80
+logical pixel; transisi menghormati preferensi reduced motion dan nama item
+tetap tersedia untuk aksesibilitas. Tombol hide/show berada inline setelah
+identitas outlet.
+
+Varian `SrComponentSize.small` adalah asumsi density untuk layar Sale, bukan
+ekstraksi ukuran Figma. Spacing-nya dipusatkan di `SrComponentMetrics` dan
+target interaksi tetap minimal `48 × 48` logical pixels.
+Kontrol jumlah item dan panah gulir pada pesanan Sale memakai lingkaran visual
+`32 × 32` logical pixels di dalam target sentuh `48 × 48` logical pixels; panah
+melayang di bawah daftar hanya saat masih ada item yang dapat digulir.
+`SrListItemSelectedStyle.primary` memakai pasangan semantic
+`ColorScheme.primary` / `onPrimary` dan radius medium untuk latar rounded menu
+aktif; style selected `subtle` tetap menjadi default.
 
 ## Naming dan penggunaan di kode
 

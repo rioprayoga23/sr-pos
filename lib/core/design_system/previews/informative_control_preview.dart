@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
+import 'package:sr_pos/core/design_system/components/assets/assets.dart';
 import 'package:sr_pos/core/design_system/components/control/control.dart';
 import 'package:sr_pos/core/design_system/components/informative/informative.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_spacing.dart';
+import 'package:sr_pos/core/design_system/foundations/sr_typography.dart';
 import 'package:sr_pos/core/design_system/previews/sr_preview_wrapper.dart';
 
 @Preview(
@@ -31,6 +33,10 @@ class _InformativeControlPreviewState
 
   @override
   Widget build(BuildContext context) {
+    final supportingTextStyle = SrTypography.bodyMedium.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
+
     return SrPreviewPage(
       children: [
         SrPreviewSection(
@@ -76,6 +82,11 @@ class _InformativeControlPreviewState
             children: [
               SrButton(label: 'Primary', onPressed: () {}),
               SrButton(
+                label: 'Compact',
+                size: SrComponentSize.small,
+                onPressed: () {},
+              ),
+              SrButton(
                 label: 'Secondary',
                 variant: SrButtonVariant.secondary,
                 onPressed: () {},
@@ -83,6 +94,16 @@ class _InformativeControlPreviewState
               SrButton(
                 label: 'Tertiary',
                 variant: SrButtonVariant.tertiary,
+                onPressed: () {},
+              ),
+              SrButton(
+                label: 'Hapus',
+                leadingIcon: SrIcon(
+                  Icons.delete_outline_rounded,
+                  size: SrIconSize.small,
+                ),
+                variant: SrButtonVariant.destructive,
+                size: SrComponentSize.small,
                 onPressed: () {},
               ),
             ],
@@ -147,7 +168,7 @@ class _InformativeControlPreviewState
           title: 'Dialog',
           child: SrDialog(
             title: 'Remove item?',
-            message: 'This action cannot be undone.',
+            onClose: () {},
             actions: [
               SrDialogAction(
                 label: 'Cancel',
@@ -155,6 +176,13 @@ class _InformativeControlPreviewState
                 onPressed: () {},
               ),
               SrDialogAction(label: 'Remove', onPressed: () {}),
+            ],
+            children: [
+              Text(
+                'This action cannot be undone.',
+                textAlign: TextAlign.center,
+                style: supportingTextStyle,
+              ),
             ],
           ),
         ),

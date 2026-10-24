@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sr_pos/core/design_system/components/content/content.dart';
+import 'package:sr_pos/core/design_system/foundations/sr_radii.dart';
 
 import '../../../../helpers/pump_sr_widget.dart';
 
@@ -37,6 +38,33 @@ void main() {
 
     await tester.tap(find.text('Amazing Shoes'));
     expect(tapped, isTrue);
+  });
+
+  testWidgets('SrCard omits empty title space for full-height media', (
+    tester,
+  ) async {
+    await pumpSrWidget(
+      tester,
+      SizedBox(
+        width: 180,
+        child: SrCard(
+          title: '',
+          visualKind: SrCardVisualKind.media,
+          visual: const ColoredBox(
+            key: Key('full-height-media'),
+            color: Colors.blue,
+          ),
+          mediaHeight: 120,
+          contentPadding: EdgeInsets.zero,
+        ),
+      ),
+    );
+
+    final card = find.byType(SrCard);
+    final media = find.byKey(const Key('full-height-media'));
+
+    expect(tester.getSize(card).height, 120);
+    expect(tester.getSize(media).height, tester.getSize(card).height);
   });
 
   testWidgets('content controls expose controlled interactions', (
@@ -103,5 +131,61 @@ void main() {
     expect(find.text('Products'), findsOneWidget);
     expect(find.text('Amazing Shoes'), findsOneWidget);
     expect(find.byIcon(Icons.chevron_right_rounded), findsOneWidget);
+  });
+
+  testWidgets('small primary list selection uses rounded primary surface', (
+    tester,
+  ) async {
+    await pumpSrWidget(
+      tester,
+      const SrListItem(
+        title: 'Kasir',
+        leading: Icon(Icons.point_of_sale_rounded),
+        selected: true,
+        selectedStyle: SrListItemSelectedStyle.primary,
+        size: SrComponentSize.small,
+      ),
+    );
+
+    final primary = Theme.of(tester.element(find.byType(SrListItem)))
+        .colorScheme
+        .primary;
+    final selectedSurface = find.byWidgetPredicate(
+      (widget) => widget is Material && widget.color == primary,
+    );
+    expect(selectedSurface, findsOneWidget);
+    expect(tester.getSize(selectedSurface).height, greaterThanOrEqualTo(48));
+    expect(
+      tester.widget<Material>(selectedSurface).shape,
+      RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(SrRadii.medium),
+      ),
+    );
+  });
+
+  testWidgets('icon-only list item centers its leading icon', (tester) async {
+    await pumpSrWidget(
+      tester,
+      const SizedBox(
+        width: 64,
+        child: SrListItem(
+          title: '',
+          semanticLabel: 'Kasir',
+          leading: Icon(Icons.point_of_sale_rounded),
+          selected: true,
+          selectedStyle: SrListItemSelectedStyle.primary,
+          size: SrComponentSize.small,
+        ),
+      ),
+    );
+
+    final item = find.byType(SrListItem);
+    final icon = find.byIcon(Icons.point_of_sale_rounded);
+
+    expect(
+      tester.getCenter(icon).dx,
+      closeTo(tester.getCenter(item).dx, 0.001),
+    );
+    expect(find.bySemanticsLabel('Kasir'), findsOneWidget);
   });
 }

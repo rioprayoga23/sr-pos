@@ -1,3 +1,4 @@
+export '../sr_component_size.dart';
 export 'sr_checkbox.dart';
 export 'sr_dropdown.dart';
 export 'sr_number_input.dart';

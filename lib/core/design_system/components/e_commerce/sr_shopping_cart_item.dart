@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:sr_pos/core/design_system/components/shared/sr_component_metrics.dart';
+import 'package:sr_pos/core/design_system/components/sr_component_size.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_radii.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_sizing.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_spacing.dart';
@@ -28,6 +29,7 @@ class SrShoppingCartItem extends StatelessWidget {
     required this.item,
     this.image,
     this.metadata,
+    this.size = SrComponentSize.medium,
     this.minimumQuantity = 1,
     this.maximumQuantity,
     this.onQuantityChanged,
@@ -40,6 +42,7 @@ class SrShoppingCartItem extends StatelessWidget {
   final SrShoppingCartItemData item;
   final Widget? image;
   final Widget? metadata;
+  final SrComponentSize size;
   final int minimumQuantity;
   final int? maximumQuantity;
   final ValueChanged<int>? onQuantityChanged;
@@ -61,6 +64,10 @@ class SrShoppingCartItem extends StatelessWidget {
     final secondary = enabled
         ? scheme.onSurfaceVariant
         : scheme.onSurfaceVariant.withValues(alpha: 0.38);
+    final isSmall = size == SrComponentSize.small;
+    final mediaSize = isSmall
+        ? SrComponentMetrics.smallCartMediaSize
+        : SrComponentMetrics.cartMediaSize;
 
     return Semantics(
       container: true,
@@ -69,14 +76,19 @@ class SrShoppingCartItem extends StatelessWidget {
           item.semanticLabel ??
           '${item.title}, ${item.priceLabel}, quantity ${item.quantity}',
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: SrSpacing.space8),
+        padding: isSmall
+            ? const EdgeInsets.only(
+                top: SrComponentMetrics.smallCartTopPadding,
+                bottom: SrSpacing.none,
+              )
+            : const EdgeInsets.symmetric(vertical: SrSpacing.space8),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(SrRadii.medium),
               child: SizedBox.square(
-                dimension: SrComponentMetrics.cartMediaSize,
+                dimension: mediaSize,
                 child: ColoredBox(
                   color: scheme.primaryContainer,
                   child:
@@ -89,7 +101,11 @@ class SrShoppingCartItem extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: SrSpacing.space12),
+            SizedBox(
+              width: isSmall
+                  ? SrComponentMetrics.smallCartHorizontalGap
+                  : SrSpacing.space12,
+            ),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,24 +114,56 @@ class SrShoppingCartItem extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: Text(
-                          item.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: SrTypography.heading5.copyWith(
-                            color: foreground,
-                          ),
-                        ),
+                        child: isSmall && item.subtitle != null
+                            ? Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Flexible(
+                                    flex: 3,
+                                    child: Text(
+                                      item.title,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: SrTypography.heading5.copyWith(
+                                        color: foreground,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: SrSpacing.space8),
+                                  Flexible(
+                                    flex: 2,
+                                    child: Text(
+                                      item.subtitle!,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.end,
+                                      style: SrTypography.bodySmall.copyWith(
+                                        color: secondary,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Text(
+                                item.title,
+                                maxLines: isSmall ? 1 : 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: SrTypography.heading5.copyWith(
+                                  color: foreground,
+                                ),
+                              ),
                       ),
-                      if (onRemove != null)
+                      if (!isSmall && onRemove != null)
                         IconButton(
                           onPressed: enabled ? onRemove : null,
                           tooltip: 'Remove ${item.title}',
-                          icon: const Icon(Icons.close_rounded),
+                          color: scheme.error,
+                          icon: const Icon(Icons.delete_outline_rounded),
                         ),
                     ],
                   ),
-                  if (item.subtitle != null) ...[
+                  if (item.subtitle != null && !isSmall) ...[
                     const SizedBox(height: SrSpacing.space4),
                     Text(
                       item.subtitle!,
@@ -128,7 +176,9 @@ class SrShoppingCartItem extends StatelessWidget {
                     const SizedBox(height: SrSpacing.space4),
                     metadata!,
                   ],
-                  const SizedBox(height: SrSpacing.space8),
+                  SizedBox(
+                    height: isSmall ? SrSpacing.space4 : SrSpacing.space8,
+                  ),
                   Row(
                     children: [
                       Expanded(
@@ -142,6 +192,7 @@ class SrShoppingCartItem extends StatelessWidget {
                       _QuantityButton(
                         icon: Icons.remove_rounded,
                         tooltip: 'Decrease quantity',
+                        compact: isSmall,
                         onPressed: canDecrease
                             ? () => onQuantityChanged!(item.quantity - 1)
                             : null,
@@ -149,12 +200,16 @@ class SrShoppingCartItem extends StatelessWidget {
                       Semantics(
                         label: 'Quantity',
                         value: '${item.quantity}',
-                        child: SizedBox(
-                          width: SrSizing.size32,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minWidth: isSmall
+                                ? SrSizing.size32
+                                : SrSizing.size48,
+                          ),
                           child: Text(
                             '${item.quantity}',
                             textAlign: TextAlign.center,
-                            style: SrTypography.actionMedium.copyWith(
+                            style: SrTypography.bodyExtraLarge.copyWith(
                               color: foreground,
                             ),
                           ),
@@ -163,10 +218,18 @@ class SrShoppingCartItem extends StatelessWidget {
                       _QuantityButton(
                         icon: Icons.add_rounded,
                         tooltip: 'Increase quantity',
+                        compact: isSmall,
                         onPressed: canIncrease
                             ? () => onQuantityChanged!(item.quantity + 1)
                             : null,
                       ),
+                      if (isSmall && onRemove != null)
+                        IconButton(
+                          onPressed: enabled ? onRemove : null,
+                          tooltip: 'Remove ${item.title}',
+                          color: scheme.error,
+                          icon: const Icon(Icons.delete_outline_rounded),
+                        ),
                     ],
                   ),
                 ],
@@ -183,21 +246,44 @@ class _QuantityButton extends StatelessWidget {
   const _QuantityButton({
     required this.icon,
     required this.tooltip,
+    required this.compact,
     required this.onPressed,
   });
 
   final IconData icon;
   final String tooltip;
+  final bool compact;
   final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     return IconButton(
       onPressed: onPressed,
       tooltip: tooltip,
-      color: scheme.primary,
-      icon: Icon(icon),
+      style: IconButton.styleFrom(
+        foregroundColor: scheme.primary,
+        disabledForegroundColor: theme.disabledColor,
+        minimumSize: const Size.square(SrSizing.minimumTouchTarget),
+        padding: EdgeInsets.zero,
+        shape: const CircleBorder(),
+      ),
+      icon: SizedBox.square(
+        dimension: compact ? SrSizing.size32 : SrSizing.minimumTouchTarget,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: scheme.primaryContainer,
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Icon(
+              icon,
+              size: compact ? SrSizing.iconSmall : SrSizing.iconMedium,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

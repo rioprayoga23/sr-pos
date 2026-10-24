@@ -71,6 +71,7 @@ class _MapCommerceDevicePreviewState extends State<_MapCommerceDevicePreview> {
               priceLabel: '€ 12.00',
               quantity: _quantity,
             ),
+            size: SrComponentSize.small,
             metadata: const Text('In stock'),
             onQuantityChanged: (value) => setState(() => _quantity = value),
             onRemove: () {},

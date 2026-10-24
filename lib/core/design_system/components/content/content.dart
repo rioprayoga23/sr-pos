@@ -1,3 +1,4 @@
+export '../sr_component_size.dart';
 export 'sr_accordion.dart';
 export 'sr_calendar.dart';
 export 'sr_card.dart';

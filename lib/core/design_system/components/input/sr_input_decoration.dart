@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:sr_pos/core/design_system/components/shared/sr_component_metrics.dart';
 import 'package:sr_pos/core/design_system/components/shared/sr_component_text_styles.dart';
+import 'package:sr_pos/core/design_system/components/sr_component_size.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_borders.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_radii.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_spacing.dart';
@@ -16,25 +18,38 @@ InputDecoration srInputDecoration(
   String? errorText,
   Widget? prefixIcon,
   Widget? suffixIcon,
+  required TextStyle valueStyle,
   Color? fillColor,
+  SrComponentSize size = SrComponentSize.medium,
 }) {
   final colors = Theme.of(context).colorScheme;
   const radius = BorderRadius.all(Radius.circular(SrRadii.medium));
+  final contentPadding = size == SrComponentSize.small
+      ? const EdgeInsets.symmetric(
+          horizontal: SrComponentMetrics.smallInputHorizontalPadding,
+          vertical: SrComponentMetrics.smallInputVerticalPadding,
+        )
+      : const EdgeInsets.symmetric(
+          horizontal: SrSpacing.space16,
+          vertical: SrSpacing.space12,
+        );
+  final placeholderStyle = SrComponentTextStyles.inputPlaceholder(
+    context,
+    valueStyle: valueStyle,
+  );
 
   return InputDecoration(
     labelText: labelText,
     hintText: hintText,
     helperText: helperText,
     errorText: errorText,
-    hintStyle: SrComponentTextStyles.inputPlaceholder(context),
+    labelStyle: placeholderStyle,
+    hintStyle: placeholderStyle,
     prefixIcon: prefixIcon,
     suffixIcon: suffixIcon,
     filled: true,
     fillColor: fillColor ?? colors.surfaceContainerLow,
-    contentPadding: const EdgeInsets.symmetric(
-      horizontal: SrSpacing.space16,
-      vertical: SrSpacing.space12,
-    ),
+    contentPadding: contentPadding,
     border: OutlineInputBorder(
       borderRadius: radius,
       borderSide: BorderSide(color: colors.outline, width: SrBorders.thin),

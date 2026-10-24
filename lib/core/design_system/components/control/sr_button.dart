@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
+import 'package:sr_pos/core/design_system/components/shared/sr_component_metrics.dart';
+import 'package:sr_pos/core/design_system/components/sr_component_size.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_radii.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_sizing.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_spacing.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_typography.dart';
 
-enum SrButtonVariant { primary, secondary, tertiary }
+enum SrButtonVariant { primary, secondary, tertiary, destructive }
 
 class SrButton extends StatelessWidget {
   const SrButton({
@@ -15,6 +17,7 @@ class SrButton extends StatelessWidget {
     this.leadingIcon,
     this.trailingIcon,
     this.isLoading = false,
+    this.size = SrComponentSize.medium,
     this.expand = false,
     this.semanticLabel,
     this.loadingSemanticLabel,
@@ -29,6 +32,7 @@ class SrButton extends StatelessWidget {
   final Widget? leadingIcon;
   final Widget? trailingIcon;
   final bool isLoading;
+  final SrComponentSize size;
   final bool expand;
   final String? semanticLabel;
   final String? loadingSemanticLabel;
@@ -44,6 +48,7 @@ class SrButton extends StatelessWidget {
     final foregroundColor = switch (variant) {
       SrButtonVariant.primary => colors.onPrimary,
       SrButtonVariant.secondary || SrButtonVariant.tertiary => colors.primary,
+      SrButtonVariant.destructive => colors.error,
     };
 
     final child = isLoading
@@ -69,10 +74,18 @@ class SrButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(SrRadii.small),
     );
     final minimumSize = const Size.square(kMinInteractiveDimension);
-    final padding = const EdgeInsets.symmetric(
-      horizontal: SrSpacing.space16,
-      vertical: SrSpacing.space12,
-    );
+    final padding = size == SrComponentSize.small
+        ? const EdgeInsets.symmetric(
+            horizontal: SrComponentMetrics.smallButtonHorizontalPadding,
+            vertical: SrComponentMetrics.smallButtonVerticalPadding,
+          )
+        : const EdgeInsets.symmetric(
+            horizontal: SrSpacing.space16,
+            vertical: SrSpacing.space12,
+          );
+    final textStyle = size == SrComponentSize.small
+        ? SrTypography.actionMedium
+        : SrTypography.actionLarge;
     final effectiveCallback = enabled ? onPressed : null;
 
     final button = switch (variant) {
@@ -88,7 +101,7 @@ class SrButton extends StatelessWidget {
           minimumSize: minimumSize,
           padding: padding,
           shape: shape,
-          textStyle: SrTypography.actionLarge,
+          textStyle: textStyle,
         ),
         child: child,
       ),
@@ -97,7 +110,7 @@ class SrButton extends StatelessWidget {
         focusNode: focusNode,
         autofocus: autofocus,
         style: OutlinedButton.styleFrom(
-          foregroundColor: colors.primary,
+          foregroundColor: foregroundColor,
           disabledForegroundColor: theme.disabledColor,
           minimumSize: minimumSize,
           padding: padding,
@@ -105,21 +118,21 @@ class SrButton extends StatelessWidget {
             color: enabled ? colors.primary : colors.outlineVariant,
           ),
           shape: shape,
-          textStyle: SrTypography.actionLarge,
+          textStyle: textStyle,
         ),
         child: child,
       ),
-      SrButtonVariant.tertiary => TextButton(
+      SrButtonVariant.tertiary || SrButtonVariant.destructive => TextButton(
         onPressed: effectiveCallback,
         focusNode: focusNode,
         autofocus: autofocus,
         style: TextButton.styleFrom(
-          foregroundColor: colors.primary,
+          foregroundColor: foregroundColor,
           disabledForegroundColor: theme.disabledColor,
           minimumSize: minimumSize,
           padding: padding,
           shape: shape,
-          textStyle: SrTypography.actionLarge,
+          textStyle: textStyle,
         ),
         child: child,
       ),

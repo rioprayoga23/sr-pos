@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:sr_pos/core/design_system/components/shared/sr_component_metrics.dart';
 import 'package:sr_pos/core/design_system/components/shared/sr_component_text_styles.dart';
+import 'package:sr_pos/core/design_system/components/sr_component_size.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_radii.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_sizing.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_spacing.dart';
@@ -15,6 +17,7 @@ class SrSearchBar extends StatefulWidget {
     this.leading,
     this.trailing,
     this.enabled = true,
+    this.size = SrComponentSize.medium,
     this.readOnly = false,
     this.autofocus = false,
     this.showClearButton = true,
@@ -39,6 +42,7 @@ class SrSearchBar extends StatefulWidget {
   final Widget? leading;
   final Widget? trailing;
   final bool enabled;
+  final SrComponentSize size;
   final bool readOnly;
   final bool autofocus;
   final bool showClearButton;
@@ -134,16 +138,26 @@ class _SrSearchBarState extends State<SrSearchBar> {
                 icon: const Icon(Icons.close_rounded),
               )
             : null);
+    final contentPadding = widget.size == SrComponentSize.small
+        ? const EdgeInsets.symmetric(
+            horizontal: SrComponentMetrics.smallInputHorizontalPadding,
+            vertical: SrComponentMetrics.smallInputVerticalPadding,
+          )
+        : const EdgeInsets.symmetric(
+            horizontal: SrSpacing.space16,
+            vertical: SrSpacing.space12,
+          );
+    final valueStyle = SrComponentTextStyles.inputValue(
+      context,
+      enabled: widget.enabled,
+    );
 
     final field = ConstrainedBox(
       constraints: const BoxConstraints(minHeight: kMinInteractiveDimension),
       child: TextField(
         controller: _controller,
         focusNode: _focusNode,
-        style: SrComponentTextStyles.inputValue(
-          context,
-          enabled: widget.enabled,
-        ),
+        style: valueStyle,
         enabled: widget.enabled,
         readOnly: widget.readOnly,
         autofocus: widget.autofocus,
@@ -154,7 +168,10 @@ class _SrSearchBarState extends State<SrSearchBar> {
         onTapOutside: widget.onTapOutside,
         decoration: InputDecoration(
           hintText: widget.placeholder,
-          hintStyle: SrComponentTextStyles.inputPlaceholder(context),
+          hintStyle: SrComponentTextStyles.inputPlaceholder(
+            context,
+            valueStyle: valueStyle,
+          ),
           prefixIcon: ExcludeSemantics(
             child: IconTheme.merge(
               data: const IconThemeData(size: SrSizing.iconMedium),
@@ -164,10 +181,7 @@ class _SrSearchBarState extends State<SrSearchBar> {
           suffixIcon: suffix,
           filled: true,
           fillColor: colors.surfaceContainerLow,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: SrSpacing.space16,
-            vertical: SrSpacing.space12,
-          ),
+          contentPadding: contentPadding,
           border: const OutlineInputBorder(
             borderRadius: BorderRadius.all(Radius.circular(SrRadii.medium)),
             borderSide: BorderSide.none,

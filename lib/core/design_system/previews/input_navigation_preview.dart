@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
+import 'package:sr_pos/core/design_system/components/content/content.dart';
 import 'package:sr_pos/core/design_system/components/input/input.dart';
 import 'package:sr_pos/core/design_system/components/navigation/navigation.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_spacing.dart';
@@ -85,6 +86,7 @@ class _InputNavigationPreviewState extends State<_InputNavigationPreview> {
                 min: 1,
                 max: 9,
                 label: 'Quantity',
+                size: SrComponentSize.small,
                 onChanged: (value) => setState(() => _quantity = value),
               ),
             ],
@@ -96,7 +98,19 @@ class _InputNavigationPreviewState extends State<_InputNavigationPreview> {
             children: [
               SrTextField(labelText: 'Product name', hintText: 'Enter a name'),
               const SizedBox(height: SrSpacing.space12),
+              SrTextField(
+                labelText: 'Compact price',
+                hintText: 'Enter an amount',
+                size: SrComponentSize.small,
+              ),
+              const SizedBox(height: SrSpacing.space12),
               SrTextArea(labelText: 'Description', hintText: 'Add details'),
+              const SizedBox(height: SrSpacing.space12),
+              SrTextArea(
+                labelText: 'Compact note',
+                hintText: 'Add details',
+                size: SrComponentSize.small,
+              ),
               const SizedBox(height: SrSpacing.space12),
               SrDropdown<String>(
                 labelText: 'Payment method',
@@ -105,10 +119,14 @@ class _InputNavigationPreviewState extends State<_InputNavigationPreview> {
                   SrDropdownItem(value: 'cash', label: 'Cash'),
                   SrDropdownItem(value: 'card', label: 'Card'),
                 ],
+                size: SrComponentSize.small,
                 onChanged: (value) => setState(() => _payment = value),
               ),
               const SizedBox(height: SrSpacing.space12),
-              const SrSearchBar(placeholder: 'Search products'),
+              const SrSearchBar(
+                placeholder: 'Search products',
+                size: SrComponentSize.small,
+              ),
               const SizedBox(height: SrSpacing.space12),
               SrSearchBar(
                 controller: _searchController,
@@ -127,6 +145,21 @@ class _InputNavigationPreviewState extends State<_InputNavigationPreview> {
                 child: SrNavBar(
                   title: 'Products',
                   onBack: () {},
+                  titleActions: [
+                    SrNavBarAction(
+                      icon: const Icon(Icons.chevron_left_rounded),
+                      tooltip: 'Toggle menu labels',
+                      onPressed: () {},
+                    ),
+                  ],
+                  titleTrailing: const Padding(
+                    padding: EdgeInsets.only(left: SrSpacing.space8),
+                    child: SrTag(
+                      label: 'Online',
+                      tone: SrTagTone.primary,
+                      size: SrTagSize.small,
+                    ),
+                  ),
                   actions: [
                     SrNavBarAction(
                       icon: const Icon(Icons.add_rounded),

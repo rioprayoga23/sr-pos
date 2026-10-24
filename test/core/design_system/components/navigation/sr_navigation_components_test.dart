@@ -114,4 +114,46 @@ void main() {
     expect(addPressed, isTrue);
     expect(find.text('Products'), findsOneWidget);
   });
+
+  testWidgets('nav bar places title actions before trailing title content', (
+    tester,
+  ) async {
+    var actionPressed = false;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: SrTheme.light,
+        home: Scaffold(
+          appBar: SrNavBar(
+            titleWidget: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [Text('Kopi Yo')],
+            ),
+            titleActions: [
+              SrNavBarAction(
+                icon: const Icon(Icons.chevron_left_rounded),
+                tooltip: 'Toggle menu labels',
+                onPressed: () => actionPressed = true,
+              ),
+            ],
+            titleTrailing: const Text('Online'),
+          ),
+          body: const SizedBox.expand(),
+        ),
+      ),
+    );
+
+    final titleBounds = tester.getRect(find.text('Kopi Yo'));
+    final action = find.byTooltip('Toggle menu labels');
+    final actionBounds = tester.getRect(action);
+    final trailingBounds = tester.getRect(find.text('Online'));
+
+    expect(titleBounds.right, lessThanOrEqualTo(actionBounds.left));
+    expect(actionBounds.right, lessThanOrEqualTo(trailingBounds.left));
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(action);
+
+    expect(actionPressed, isTrue);
+  });
 }

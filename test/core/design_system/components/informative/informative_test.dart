@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sr_pos/core/design_system/components/control/sr_button.dart';
 import 'package:sr_pos/core/design_system/components/informative/informative.dart';
+import 'package:sr_pos/core/design_system/foundations/sr_sizing.dart';
 
 import '../../../../helpers/pump_sr_widget.dart';
 
@@ -100,6 +101,69 @@ void main() {
 
       await tester.tap(find.text('Remove'));
       expect(confirmed, isTrue);
+    });
+
+    testWidgets('dialog caps wide layouts and lays out custom children', (
+      tester,
+    ) async {
+      await pumpSrWidget(
+        tester,
+        SrDialog(
+          title: 'Payment complete',
+          actions: const [
+            SrDialogAction(label: 'Close', onPressed: null),
+            SrDialogAction(label: 'New sale', onPressed: null),
+          ],
+          children: const [Text('8 items · Cash'), Text('General customer')],
+        ),
+        surfaceSize: const Size(1920, 1080),
+      );
+
+      final dialogSurface = find.descendant(
+        of: find.byType(Dialog),
+        matching: find.byWidgetPredicate(
+          (widget) => widget is Material && widget.type == MaterialType.card,
+        ),
+      );
+      expect(tester.getSize(dialogSurface).width, SrSizing.size80 * 8);
+      expect(find.text('8 items · Cash'), findsOneWidget);
+      expect(find.text('General customer'), findsOneWidget);
+    });
+
+    testWidgets('dialog close action uses its compact width and semantics', (
+      tester,
+    ) async {
+      var closed = false;
+
+      await pumpSrWidget(
+        tester,
+        SrDialog(
+          title: 'Payment complete',
+          actions: const [
+            SrDialogAction(label: 'Close', onPressed: null),
+            SrDialogAction(label: 'New sale', onPressed: null),
+          ],
+          compact: true,
+          maxWidth: 560,
+          onClose: () => closed = true,
+        ),
+        surfaceSize: const Size(1920, 1080),
+      );
+
+      final dialogSurface = find.descendant(
+        of: find.byType(Dialog),
+        matching: find.byWidgetPredicate(
+          (widget) => widget is Material && widget.type == MaterialType.card,
+        ),
+      );
+      final closeButton = find.byTooltip('Tutup dialog');
+
+      expect(tester.getSize(dialogSurface).width, 560);
+      expect(closeButton, findsOneWidget);
+      expect(tester.getSize(find.byType(IconButton)), const Size.square(48));
+
+      await tester.tap(closeButton);
+      expect(closed, isTrue);
     });
 
     testWidgets('toast helper presents a floating toast safely', (

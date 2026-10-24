@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:sr_pos/core/design_system/components/assets/sr_avatar.dart';
+import 'package:sr_pos/core/design_system/components/assets/sr_icon.dart';
 import 'package:sr_pos/core/design_system/components/content/content.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_spacing.dart';
 import 'package:sr_pos/core/design_system/previews/sr_preview_wrapper.dart';
@@ -46,6 +47,13 @@ class _ContentPreviewState extends State<_ContentPreview> {
                 leading: SrAvatar(initials: 'AS'),
                 selected: true,
                 showChevron: true,
+              ),
+              SrListItem(
+                title: 'Sale',
+                leading: SrIcon(Icons.point_of_sale_rounded),
+                selected: true,
+                selectedStyle: SrListItemSelectedStyle.primary,
+                size: SrComponentSize.small,
               ),
             ],
           ),

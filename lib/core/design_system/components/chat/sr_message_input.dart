@@ -34,6 +34,10 @@ class SrMessageInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final valueStyle = SrComponentTextStyles.inputValue(
+      context,
+      enabled: enabled,
+    );
     return Semantics(
       container: true,
       label: semanticLabel,
@@ -60,10 +64,7 @@ class SrMessageInput extends StatelessWidget {
                 child: TextField(
                   controller: controller,
                   focusNode: focusNode,
-                  style: SrComponentTextStyles.inputValue(
-                    context,
-                    enabled: enabled,
-                  ),
+                  style: valueStyle,
                   enabled: enabled,
                   minLines: 1,
                   maxLines: 5,
@@ -72,7 +73,10 @@ class SrMessageInput extends StatelessWidget {
                   onChanged: onChanged,
                   decoration: InputDecoration(
                     hintText: hintText,
-                    hintStyle: SrComponentTextStyles.inputPlaceholder(context),
+                    hintStyle: SrComponentTextStyles.inputPlaceholder(
+                      context,
+                      valueStyle: valueStyle,
+                    ),
                     fillColor: SrColors.transparent,
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,

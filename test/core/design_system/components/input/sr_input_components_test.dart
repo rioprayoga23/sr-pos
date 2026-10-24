@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sr_pos/core/design_system/components/input/input.dart';
+import 'package:sr_pos/core/design_system/foundations/sr_spacing.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_typography.dart';
 
 import '../../../../helpers/pump_sr_widget.dart';
@@ -137,15 +138,155 @@ void main() {
         find.byType(InputDecorator),
       );
       expect(textField.style.fontSize, SrTypography.bodyMedium.fontSize);
-      expect(
-        textFieldDecorator.decoration.hintStyle?.fontSize,
-        textField.style.fontSize,
+      _expectSameTextMetrics(
+        textFieldDecorator.decoration.hintStyle,
+        textField.style,
+        sample: 'Enter a name',
       );
 
       await tester.enterText(find.byType(TextFormField), 'Rio');
 
       expect(value, 'Rio');
       expect(find.text('Required'), findsOneWidget);
+    });
+
+    testWidgets('resting field label shares placeholder text metrics', (
+      tester,
+    ) async {
+      await pumpSrWidget(
+        tester,
+        SizedBox(
+          width: 320,
+          child: SrTextField(
+            labelText: 'Uang diterima',
+            hintText: 'Contoh: 50000',
+            size: SrComponentSize.small,
+          ),
+        ),
+      );
+
+      final textField = tester.widget<EditableText>(find.byType(EditableText));
+      final decorator = tester.widget<InputDecorator>(
+        find.byType(InputDecorator),
+      );
+
+      _expectSameTextMetrics(
+        decorator.decoration.labelStyle,
+        textField.style,
+        sample: 'Uang diterima',
+      );
+      final renderedLabelStyle = DefaultTextStyle.of(
+        tester.element(find.text('Uang diterima')),
+      ).style;
+      expect(renderedLabelStyle.fontSize, textField.style.fontSize);
+      expect(
+        _measureText(renderedLabelStyle, 'Uang diterima').width,
+        _measureText(textField.style, 'Uang diterima').width,
+      );
+      _expectSameTextMetrics(
+        decorator.decoration.hintStyle,
+        textField.style,
+        sample: 'Contoh: 50000',
+      );
+    });
+
+    testWidgets('small text field reduces padding and keeps touch height', (
+      tester,
+    ) async {
+      await pumpSrWidget(
+        tester,
+        SizedBox(
+          width: 320,
+          child: SrTextField(
+            hintText: 'Cari menu',
+            size: SrComponentSize.small,
+          ),
+        ),
+      );
+
+      final decorator = tester.widget<InputDecorator>(
+        find.byType(InputDecorator),
+      );
+      expect(
+        decorator.decoration.contentPadding,
+        const EdgeInsets.symmetric(
+          horizontal: SrSpacing.space12,
+          vertical: SrSpacing.space8,
+        ),
+      );
+      expect(
+        tester.getSize(find.byType(TextFormField)).height,
+        greaterThanOrEqualTo(48),
+      );
+    });
+
+    testWidgets('small text, search, and dropdown fields share compact inset', (
+      tester,
+    ) async {
+      await pumpSrWidget(
+        tester,
+        SizedBox(
+          width: 320,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SrTextField(hintText: 'Name', size: SrComponentSize.small),
+              SrTextArea(hintText: 'Description', size: SrComponentSize.small),
+              SrDropdown<String>(
+                hintText: 'Payment method',
+                size: SrComponentSize.small,
+                items: const [SrDropdownItem(value: 'cash', label: 'Cash')],
+                onChanged: _ignore,
+              ),
+              SrSearchBar(size: SrComponentSize.small, placeholder: 'Search'),
+            ],
+          ),
+        ),
+        surfaceSize: const Size(390, 700),
+      );
+
+      final expectedPadding = const EdgeInsets.symmetric(
+        horizontal: SrSpacing.space12,
+        vertical: SrSpacing.space8,
+      );
+      final decorators = tester.widgetList<InputDecorator>(
+        find.byType(InputDecorator),
+      );
+      expect(decorators, hasLength(4));
+      expect(
+        decorators.map((decorator) => decorator.decoration.contentPadding),
+        everyElement(expectedPadding),
+      );
+      final search = tester.widget<TextField>(find.byType(TextField).last);
+      expect(search.decoration?.contentPadding, expectedPadding);
+      final inputDecorators = decorators.toList();
+      final editableTexts = tester
+          .widgetList<EditableText>(find.byType(EditableText))
+          .toList();
+      _expectSameTextMetrics(
+        inputDecorators[0].decoration.hintStyle,
+        editableTexts[0].style,
+        sample: 'Name',
+      );
+      _expectSameTextMetrics(
+        inputDecorators[1].decoration.hintStyle,
+        editableTexts[1].style,
+        sample: 'Description',
+      );
+      _expectSameTextMetrics(
+        inputDecorators[3].decoration.hintStyle,
+        editableTexts[2].style,
+        sample: 'Search',
+      );
+      final dropdown = tester.widget<DropdownButton<String>>(
+        find.byType(DropdownButton<String>),
+      );
+      _expectSameTextMetrics(
+        tester.widget<Text>(find.text('Payment method')).style,
+        dropdown.style,
+        sample: 'Payment method',
+      );
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('text area supports multiline input', (tester) async {
@@ -167,9 +308,10 @@ void main() {
         find.byType(InputDecorator),
       );
       expect(textArea.style.fontSize, SrTypography.bodyMedium.fontSize);
-      expect(
-        textAreaDecorator.decoration.hintStyle?.fontSize,
-        textArea.style.fontSize,
+      _expectSameTextMetrics(
+        textAreaDecorator.decoration.hintStyle,
+        textArea.style,
+        sample: 'Add details',
       );
 
       await tester.enterText(find.byType(TextFormField), 'First\nSecond');
@@ -204,7 +346,11 @@ void main() {
       );
       final hint = tester.widget<Text>(find.text('Payment method'));
       expect(dropdown.style?.fontSize, SrTypography.bodyMedium.fontSize);
-      expect(hint.style?.fontSize, dropdown.style?.fontSize);
+      _expectSameTextMetrics(
+        hint.style,
+        dropdown.style,
+        sample: 'Payment method',
+      );
 
       await tester.tap(find.byType(DropdownButton<String>));
       await tester.pumpAndSettle();
@@ -237,9 +383,10 @@ void main() {
 
       final searchField = tester.widget<TextField>(find.byType(TextField));
       expect(searchField.style?.fontSize, SrTypography.bodyMedium.fontSize);
-      expect(
-        searchField.decoration?.hintStyle?.fontSize,
-        searchField.style?.fontSize,
+      _expectSameTextMetrics(
+        searchField.decoration?.hintStyle,
+        searchField.style,
+        sample: 'Search products',
       );
 
       await tester.enterText(find.byType(TextField), 'Shoes');
@@ -266,20 +413,7 @@ void main() {
       final valueStyle = field.style!;
       final placeholderStyle = field.decoration!.hintStyle!;
 
-      expect(placeholderStyle.fontFamily, valueStyle.fontFamily);
-      expect(placeholderStyle.fontSize, valueStyle.fontSize);
-      expect(placeholderStyle.fontWeight, valueStyle.fontWeight);
-      expect(placeholderStyle.fontVariations, valueStyle.fontVariations);
-
-      Size measure(TextStyle style) {
-        final painter = TextPainter(
-          text: TextSpan(text: 'Search', style: style),
-          textDirection: TextDirection.ltr,
-        )..layout();
-        return painter.size;
-      }
-
-      expect(measure(placeholderStyle), measure(valueStyle));
+      _expectSameTextMetrics(placeholderStyle, valueStyle, sample: 'Search');
 
       await tester.enterText(find.byType(TextField), 'Search');
       await tester.pump();
@@ -288,4 +422,39 @@ void main() {
       expect(filledField.style, valueStyle);
     });
   });
+}
+
+void _ignore(String? _) {}
+
+void _expectSameTextMetrics(
+  TextStyle? hintStyle,
+  TextStyle? valueStyle, {
+  required String sample,
+}) {
+  expect(hintStyle, isNotNull);
+  expect(valueStyle, isNotNull);
+  final hint = hintStyle!;
+  final value = valueStyle!;
+  expect(hint.fontFamily, value.fontFamily);
+  expect(hint.fontFamilyFallback, value.fontFamilyFallback);
+  expect(hint.fontSize, value.fontSize);
+  expect(hint.fontWeight, value.fontWeight);
+  expect(hint.fontStyle, value.fontStyle);
+  expect(hint.letterSpacing, value.letterSpacing);
+  expect(hint.wordSpacing, value.wordSpacing);
+  expect(hint.height, value.height);
+  expect(hint.textBaseline, value.textBaseline);
+  expect(hint.leadingDistribution, value.leadingDistribution);
+  expect(hint.fontFeatures, value.fontFeatures);
+  expect(hint.fontVariations, value.fontVariations);
+
+  expect(_measureText(hint, sample), _measureText(value, sample));
+}
+
+Size _measureText(TextStyle style, String sample) {
+  final painter = TextPainter(
+    text: TextSpan(text: sample, style: style),
+    textDirection: TextDirection.ltr,
+  )..layout();
+  return painter.size;
 }

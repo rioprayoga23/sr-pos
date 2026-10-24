@@ -55,9 +55,10 @@ void main() {
 
     final messageField = tester.widget<TextField>(find.byType(TextField));
     expect(messageField.style?.fontSize, SrTypography.bodyMedium.fontSize);
-    expect(
-      messageField.decoration?.hintStyle?.fontSize,
-      messageField.style?.fontSize,
+    _expectSameTextMetrics(
+      messageField.decoration?.hintStyle,
+      messageField.style,
+      sample: 'Message',
     );
 
     await tester.enterText(find.byType(TextField), '  Ready  ');
@@ -66,4 +67,30 @@ void main() {
 
     expect(sentMessage, 'Ready');
   });
+}
+
+void _expectSameTextMetrics(
+  TextStyle? hintStyle,
+  TextStyle? valueStyle, {
+  required String sample,
+}) {
+  expect(hintStyle, isNotNull);
+  expect(valueStyle, isNotNull);
+  final hint = hintStyle!;
+  final value = valueStyle!;
+  expect(hint.fontFamily, value.fontFamily);
+  expect(hint.fontSize, value.fontSize);
+  expect(hint.fontWeight, value.fontWeight);
+  expect(hint.letterSpacing, value.letterSpacing);
+  expect(hint.height, value.height);
+
+  Size measure(TextStyle style) {
+    final painter = TextPainter(
+      text: TextSpan(text: sample, style: style),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    return painter.size;
+  }
+
+  expect(measure(hint), measure(value));
 }

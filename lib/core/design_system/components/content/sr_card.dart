@@ -304,25 +304,26 @@ class _CardCopy extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (tag != null) ...[tag!, const SizedBox(height: SrSpacing.space8)],
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Text(
-                title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style:
-                    titleStyle ??
-                    SrTypography.heading5.copyWith(color: scheme.onSurface),
+        if (title.trim().isNotEmpty || resolvedTrailing != null)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style:
+                      titleStyle ??
+                      SrTypography.heading5.copyWith(color: scheme.onSurface),
+                ),
               ),
-            ),
-            if (resolvedTrailing != null) ...[
-              const SizedBox(width: SrSpacing.space8),
-              resolvedTrailing,
+              if (resolvedTrailing != null) ...[
+                const SizedBox(width: SrSpacing.space8),
+                resolvedTrailing,
+              ],
             ],
-          ],
-        ),
+          ),
         if (subtitle != null) ...[
           const SizedBox(height: SrSpacing.space4),
           Text(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sr_pos/core/design_system/components/input/sr_input_decoration.dart';
 import 'package:sr_pos/core/design_system/components/shared/sr_component_text_styles.dart';
+import 'package:sr_pos/core/design_system/components/sr_component_size.dart';
 
 /// A multiline text field styled with the SR-POS input tokens.
 class SrTextArea extends StatelessWidget {
@@ -17,6 +18,7 @@ class SrTextArea extends StatelessWidget {
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
+    this.size = SrComponentSize.medium,
     this.readOnly = false,
     this.autofocus = false,
     this.minLines = 4,
@@ -57,6 +59,7 @@ class SrTextArea extends StatelessWidget {
   final Widget? prefixIcon;
   final Widget? suffixIcon;
   final bool enabled;
+  final SrComponentSize size;
   final bool readOnly;
   final bool autofocus;
   final int minLines;
@@ -75,17 +78,23 @@ class SrTextArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final valueStyle = SrComponentTextStyles.inputValue(
+      context,
+      enabled: enabled,
+    );
     final field = TextFormField(
       controller: controller,
       initialValue: initialValue,
       focusNode: focusNode,
-      style: SrComponentTextStyles.inputValue(context, enabled: enabled),
+      style: valueStyle,
       decoration: srInputDecoration(
         context,
+        valueStyle: valueStyle,
         labelText: labelText,
         hintText: hintText,
         helperText: helperText,
         errorText: errorText,
+        size: size,
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
       ).copyWith(alignLabelWithHint: true),

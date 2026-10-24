@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sr_pos/core/design_system/components/input/sr_input_decoration.dart';
 import 'package:sr_pos/core/design_system/components/shared/sr_component_text_styles.dart';
+import 'package:sr_pos/core/design_system/components/sr_component_size.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_sizing.dart';
 
 @immutable
@@ -31,6 +32,7 @@ class SrDropdown<T> extends StatefulWidget {
     this.errorText,
     this.semanticLabel,
     this.prefixIcon,
+    this.size = SrComponentSize.medium,
     this.enabled = true,
     this.autofocus = false,
     this.menuMaxHeight,
@@ -48,6 +50,7 @@ class SrDropdown<T> extends StatefulWidget {
   final String? errorText;
   final String? semanticLabel;
   final Widget? prefixIcon;
+  final SrComponentSize size;
   final bool enabled;
   final bool autofocus;
   final double? menuMaxHeight;
@@ -100,6 +103,10 @@ class _SrDropdownState<T> extends State<SrDropdown<T>> {
     );
 
     final enabled = widget.enabled && widget.onChanged != null;
+    final valueStyle = SrComponentTextStyles.inputValue(
+      context,
+      enabled: enabled,
+    );
     final selectedItem = widget.value == null
         ? null
         : widget.items.firstWhere((item) => item.value == widget.value);
@@ -111,9 +118,11 @@ class _SrDropdownState<T> extends State<SrDropdown<T>> {
         isFocused: _focusNode.hasFocus,
         decoration: srInputDecoration(
           context,
+          valueStyle: valueStyle,
           labelText: widget.labelText,
           helperText: widget.helperText,
           errorText: widget.errorText,
+          size: widget.size,
           prefixIcon: widget.prefixIcon,
         ).copyWith(enabled: enabled),
         child: DropdownButtonHideUnderline(
@@ -124,11 +133,14 @@ class _SrDropdownState<T> extends State<SrDropdown<T>> {
             focusNode: _focusNode,
             autofocus: widget.autofocus,
             menuMaxHeight: widget.menuMaxHeight,
-            style: SrComponentTextStyles.inputValue(context, enabled: enabled),
+            style: valueStyle,
             hint: switch (widget.hintText) {
               final hintText? => Text(
                 hintText,
-                style: SrComponentTextStyles.inputPlaceholder(context),
+                style: SrComponentTextStyles.inputPlaceholder(
+                  context,
+                  valueStyle: valueStyle,
+                ),
               ),
               null => null,
             },
