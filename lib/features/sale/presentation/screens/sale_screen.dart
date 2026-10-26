@@ -3,15 +3,22 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sr_pos/core/design_system/design_system.dart';
-import 'package:sr_pos/features/sale/domain/models/sale_product.dart';
+import 'package:sr_pos/features/sale/domain/services/catalog_ingredient_image_picker.dart';
 import 'package:sr_pos/features/sale/presentation/view_models/sale_cubit.dart';
 import 'package:sr_pos/features/sale/presentation/view_models/sale_ui_state.dart';
+import 'package:sr_pos/features/sale/presentation/widgets/catalog_workspace.dart';
 import 'package:sr_pos/features/sale/presentation/widgets/sale_order_list.dart';
+import 'package:sr_pos/features/sale/presentation/widgets/sale_product_catalog.dart';
 
 class SaleScreen extends StatefulWidget {
-  const SaleScreen({required this.cubit, super.key});
+  const SaleScreen({
+    required this.cubit,
+    this.catalogIngredientImagePicker,
+    super.key,
+  });
 
   final SaleCubit cubit;
+  final CatalogIngredientImagePicker? catalogIngredientImagePicker;
 
   @override
   State<SaleScreen> createState() => _SaleScreenState();
@@ -21,6 +28,9 @@ class _SaleScreenState extends State<SaleScreen> {
   late final TextEditingController _searchController;
   late final TextEditingController _cashController;
   bool _isSidebarExpanded = true;
+  _MainNavigationDestination _selectedMainDestination =
+      _MainNavigationDestination.cashier;
+  CatalogSection _selectedCatalogSection = CatalogSection.items;
 
   @override
   void initState() {
@@ -58,7 +68,11 @@ class _SaleScreenState extends State<SaleScreen> {
             Expanded(
               child: Row(
                 children: [
-                  _SaleSidebar(isExpanded: _isSidebarExpanded),
+                  _SaleSidebar(
+                    isExpanded: _isSidebarExpanded,
+                    selectedDestination: _selectedMainDestination,
+                    onDestinationSelected: _selectMainDestination,
+                  ),
                   SrDivider(axis: Axis.vertical),
                   Expanded(
                     child: StreamBuilder<SaleUiState>(
@@ -66,15 +80,27 @@ class _SaleScreenState extends State<SaleScreen> {
                       initialData: widget.cubit.state,
                       builder: (context, snapshot) {
                         final state = snapshot.data ?? widget.cubit.state;
-                        return _SaleWorkspace(
+                        if (_selectedMainDestination ==
+                            _MainNavigationDestination.cashier) {
+                          return _SaleWorkspace(
+                            state: state,
+                            cubit: widget.cubit,
+                            searchController: _searchController,
+                            cashController: _cashController,
+                            onProductSelected: _addProduct,
+                            onCashAmountSelected: _setCashAmount,
+                            onClearOrder: _confirmClearOrder,
+                            onCompleteSale: _completeSale,
+                          );
+                        }
+                        return CatalogWorkspace(
                           state: state,
                           cubit: widget.cubit,
                           searchController: _searchController,
-                          cashController: _cashController,
-                          onProductSelected: _addProduct,
-                          onCashAmountSelected: _setCashAmount,
-                          onClearOrder: _confirmClearOrder,
-                          onCompleteSale: _completeSale,
+                          selectedSection: _selectedCatalogSection,
+                          onSectionSelected: _selectCatalogSection,
+                          catalogIngredientImagePicker:
+                              widget.catalogIngredientImagePicker,
                         );
                       },
                     ),
@@ -86,6 +112,25 @@ class _SaleScreenState extends State<SaleScreen> {
         ),
       ),
     );
+  }
+
+  void _selectMainDestination(_MainNavigationDestination destination) {
+    if (_selectedMainDestination == destination) return;
+
+    _searchController.clear();
+    widget.cubit.updateQuery('');
+    if (destination == _MainNavigationDestination.catalog) {
+      widget.cubit.selectCategory(SaleCategoryFilter.all);
+      widget.cubit.setRecommendedOnly(false);
+    }
+    setState(() {
+      _selectedMainDestination = destination;
+      _selectedCatalogSection = CatalogSection.items;
+    });
+  }
+
+  void _selectCatalogSection(CatalogSection section) {
+    setState(() => _selectedCatalogSection = section);
   }
 
   void _setCashAmount(int amount) {
@@ -383,7 +428,7 @@ class _SaleWorkspace extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final catalog = _ProductCatalog(
+    final catalog = SaleProductCatalog(
       state: state,
       searchController: searchController,
       onQueryChanged: cubit.updateQuery,
@@ -439,9 +484,15 @@ class _SaleWorkspace extends StatelessWidget {
 }
 
 class _SaleSidebar extends StatelessWidget {
-  const _SaleSidebar({required this.isExpanded});
+  const _SaleSidebar({
+    required this.isExpanded,
+    required this.selectedDestination,
+    required this.onDestinationSelected,
+  });
 
   final bool isExpanded;
+  final _MainNavigationDestination selectedDestination;
+  final ValueChanged<_MainNavigationDestination> onDestinationSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -462,39 +513,15 @@ class _SaleSidebar extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _navigationItem(
+              destination: _MainNavigationDestination.cashier,
               title: 'Kasir',
               icon: Icons.point_of_sale_rounded,
-              selected: true,
             ),
             const SizedBox(height: SrSpacing.space8),
             _navigationItem(
-              title: 'Antrean',
-              icon: Icons.pending_actions_outlined,
-              enabled: false,
-            ),
-            const SizedBox(height: SrSpacing.space8),
-            _navigationItem(
-              title: 'Menu',
-              icon: Icons.local_cafe_outlined,
-              enabled: false,
-            ),
-            const SizedBox(height: SrSpacing.space8),
-            _navigationItem(
-              title: 'Stok',
+              destination: _MainNavigationDestination.catalog,
+              title: 'Katalog',
               icon: Icons.inventory_2_outlined,
-              enabled: false,
-            ),
-            const SizedBox(height: SrSpacing.space8),
-            _navigationItem(
-              title: 'Kas',
-              icon: Icons.account_balance_wallet_outlined,
-              enabled: false,
-            ),
-            const SizedBox(height: SrSpacing.space8),
-            _navigationItem(
-              title: 'Riwayat',
-              icon: Icons.receipt_long_outlined,
-              enabled: false,
             ),
             const Spacer(),
             if (isExpanded)
@@ -512,305 +539,23 @@ class _SaleSidebar extends StatelessWidget {
   }
 
   Widget _navigationItem({
+    required _MainNavigationDestination destination,
     required String title,
     required IconData icon,
-    bool selected = false,
-    bool enabled = true,
   }) {
     return SrListItem(
       title: isExpanded ? title : '',
       semanticLabel: title,
       leading: SrIcon(icon, size: SrIconSize.small),
-      selected: selected,
+      selected: selectedDestination == destination,
       selectedStyle: SrListItemSelectedStyle.primary,
-      enabled: enabled,
       size: SrComponentSize.small,
+      onTap: () => onDestinationSelected(destination),
     );
   }
 }
 
-class _ProductCatalog extends StatelessWidget {
-  const _ProductCatalog({
-    required this.state,
-    required this.searchController,
-    required this.onQueryChanged,
-    required this.onCategoryChanged,
-    required this.onRecommendedChanged,
-    required this.onProductSelected,
-    required this.onRetry,
-  });
-
-  final SaleUiState state;
-  final TextEditingController searchController;
-  final ValueChanged<String> onQueryChanged;
-  final ValueChanged<SaleCategoryFilter> onCategoryChanged;
-  final ValueChanged<bool> onRecommendedChanged;
-  final ValueChanged<SaleProductViewData> onProductSelected;
-  final Future<void> Function() onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: SrSpacing.space8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    for (final category in _SaleCategoryOption.values) ...[
-                      SrFilter(
-                        label:
-                            '${category.label} '
-                            '(${state.categoryCounts[category.filter] ?? 0})',
-                        semanticLabel: 'Filter ${category.label}',
-                        selected: state.categoryFilter == category.filter,
-                        leading: SrIcon(category.icon, size: SrIconSize.small),
-                        onSelected: (_) => onCategoryChanged(category.filter),
-                      ),
-                      const SizedBox(width: SrSpacing.space8),
-                    ],
-                  ],
-                ),
-              ),
-              const SizedBox(height: SrSpacing.space8),
-              Row(
-                children: [
-                  Expanded(
-                    child: SrTextField(
-                      controller: searchController,
-                      hintText: 'Cari menu',
-                      semanticLabel: 'Cari menu',
-                      prefixIcon: const SrIcon(
-                        Icons.search_rounded,
-                        size: SrIconSize.small,
-                      ),
-                      size: SrComponentSize.small,
-                      textInputAction: TextInputAction.search,
-                      onChanged: onQueryChanged,
-                      onTapOutside: (_) =>
-                          FocusManager.instance.primaryFocus?.unfocus(),
-                    ),
-                  ),
-                  const SizedBox(width: SrSpacing.space8),
-                  SrFilter(
-                    label: 'Rekomendasi',
-                    semanticLabel: 'Filter menu rekomendasi',
-                    selected: state.recommendedOnly,
-                    leading: const SrIcon(
-                      Icons.star_outline_rounded,
-                      size: SrIconSize.small,
-                    ),
-                    onSelected: onRecommendedChanged,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: SrSpacing.space8),
-          child: Text(
-            state.isLoading
-                ? 'Menyiapkan menu'
-                : '${state.products.length} menu · ketuk untuk menambahkan',
-            style: SrTypography.bodySmall.copyWith(
-              color: colors.onSurfaceVariant,
-            ),
-          ),
-        ),
-        Expanded(
-          child: _ProductResults(
-            state: state,
-            onProductSelected: onProductSelected,
-            onRetry: onRetry,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-enum _SaleCategoryOption {
-  all(SaleCategoryFilter.all, 'Semua', Icons.apps_rounded),
-  coffee(SaleCategoryFilter.coffee, 'Kopi', Icons.coffee_outlined),
-  nonCoffee(
-    SaleCategoryFilter.nonCoffee,
-    'Non-kopi',
-    Icons.local_drink_outlined,
-  ),
-  snack(SaleCategoryFilter.snack, 'Camilan', Icons.bakery_dining_outlined);
-
-  const _SaleCategoryOption(this.filter, this.label, this.icon);
-
-  final SaleCategoryFilter filter;
-  final String label;
-  final IconData icon;
-}
-
-class _ProductResults extends StatelessWidget {
-  const _ProductResults({
-    required this.state,
-    required this.onProductSelected,
-    required this.onRetry,
-  });
-
-  final SaleUiState state;
-  final ValueChanged<SaleProductViewData> onProductSelected;
-  final Future<void> Function() onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    if (state.isLoading) {
-      return const Center(child: SrLoader(label: 'Memuat menu'));
-    }
-
-    if (state.errorMessage case final message?) {
-      return Padding(
-        padding: const EdgeInsets.all(SrSpacing.space12),
-        child: Center(
-          child: SrBanner(
-            title: 'Menu belum tersedia',
-            message: message,
-            tone: SrFeedbackTone.error,
-            actions: [
-              SrButton(
-                label: 'Coba lagi',
-                variant: SrButtonVariant.secondary,
-                onPressed: () => unawaited(onRetry()),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (state.products.isEmpty) {
-      return Center(
-        child: Text(
-          'Menu tidak ditemukan. Coba kata kunci lain.',
-          style: SrTypography.bodyMedium.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-      );
-    }
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final gridColumnCount = _SaleLayout.productColumnCount(
-          constraints.maxWidth,
-        );
-        final productCardHeight = gridColumnCount == 3
-            ? _SaleLayout.threeColumnProductCardHeight
-            : _SaleLayout.productCardHeight;
-
-        return GridView.builder(
-          padding: const EdgeInsets.fromLTRB(0, 0, 0, SrSpacing.space16),
-          gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: _SaleLayout.productCardMaxWidth,
-            mainAxisExtent: productCardHeight,
-            crossAxisSpacing: SrSpacing.space8,
-            mainAxisSpacing: SrSpacing.space8,
-          ),
-          itemCount: state.products.length,
-          itemBuilder: (context, index) {
-            final product = state.products[index];
-            final colors = Theme.of(context).colorScheme;
-            final quantity = state.quantityOf(product.id);
-            final productCard = SrCard(
-              key: ValueKey(product.id),
-              title: '',
-              visualKind: SrCardVisualKind.media,
-              visual: Stack(
-                fit: StackFit.expand,
-                children: [
-                  SrImagePlaceholder(
-                    height: double.infinity,
-                    icon: product.category == SaleProductCategory.snack
-                        ? Icons.bakery_dining_outlined
-                        : Icons.coffee_outlined,
-                    borderRadius: SrSpacing.none,
-                  ),
-                  Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          stops: const [0.42, 1],
-                          colors: [
-                            colors.inverseSurface.withValues(alpha: 0),
-                            colors.inverseSurface.withValues(alpha: 0.88),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  if (product.isPopular)
-                    Positioned(
-                      top: SrSpacing.space8,
-                      left: SrSpacing.space8,
-                      child: const SrTag(
-                        label: 'Rekomendasi',
-                        tone: SrTagTone.primary,
-                        size: SrTagSize.small,
-                      ),
-                    ),
-                  Positioned(
-                    left: SrSpacing.space12,
-                    right: SrSpacing.space12,
-                    bottom: SrSpacing.space12,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          product.name,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: SrTypography.heading4.copyWith(
-                            color: colors.onInverseSurface,
-                          ),
-                        ),
-                        const SizedBox(height: SrSpacing.space4),
-                        Text(
-                          product.priceLabel,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: SrTypography.actionMedium.copyWith(
-                            color: colors.onInverseSurface,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              mediaHeight: productCardHeight,
-              contentPadding: EdgeInsets.zero,
-              semanticLabel: 'Tambah ${product.name}, ${product.priceLabel}',
-              onTap: () => onProductSelected(product),
-            );
-            if (quantity == 0) return productCard;
-
-            return SrBadge.count(
-              count: quantity,
-              offset: const Offset(-SrSpacing.space8, SrSpacing.space8),
-              semanticLabel: 'Jumlah di keranjang: $quantity',
-              child: productCard,
-            );
-          },
-        );
-      },
-    );
-  }
-}
+enum _MainNavigationDestination { cashier, catalog }
 
 class _OrderPanel extends StatelessWidget {
   const _OrderPanel({
@@ -1060,17 +805,10 @@ abstract final class _SaleLayout {
       SrSpacing.space8 -
       SrSizing.minimumTouchTarget;
   static const double wideBreakpoint = 900;
-  static const double productCardMaxWidth = 212;
-  static const double productCardHeight = 196;
-  // assumption: three columns need shorter tiles to keep the tablet grid dense.
-  static const double threeColumnProductCardHeight = 168;
   // assumption: scroll area keeps a full receipt and its actions within tablet height.
   static const double receiptLinesMaxHeight = 320;
   // assumption: keeps the payment receipt comfortably inset on tablet screens.
   static const double paymentDialogMaxWidth = SrSizing.size80 * 7;
-
-  static int productColumnCount(double availableWidth) =>
-      (availableWidth / (productCardMaxWidth + SrSpacing.space8)).ceil();
 }
 
 class _CashAmountInputFormatter extends TextInputFormatter {

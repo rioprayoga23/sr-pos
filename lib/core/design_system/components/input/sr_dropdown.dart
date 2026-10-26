@@ -120,6 +120,7 @@ class _SrDropdownState<T> extends State<SrDropdown<T>> {
           context,
           valueStyle: valueStyle,
           labelText: widget.labelText,
+          hintText: widget.hintText,
           helperText: widget.helperText,
           errorText: widget.errorText,
           size: widget.size,
@@ -134,16 +135,6 @@ class _SrDropdownState<T> extends State<SrDropdown<T>> {
             autofocus: widget.autofocus,
             menuMaxHeight: widget.menuMaxHeight,
             style: valueStyle,
-            hint: switch (widget.hintText) {
-              final hintText? => Text(
-                hintText,
-                style: SrComponentTextStyles.inputPlaceholder(
-                  context,
-                  valueStyle: valueStyle,
-                ),
-              ),
-              null => null,
-            },
             onChanged: enabled ? widget.onChanged : null,
             items: widget.items
                 .map(

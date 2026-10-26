@@ -1,12 +1,12 @@
 # SR-POS Design System Extraction
 
-Dokumen ini menjadi sumber kerja untuk menerapkan design system SR-POS dari
-referensi Figma. Nilai yang diberi label **Figma exact** berasal dari data
-referensi yang sudah diekstrak. Nama semantik dan aturan implementasi di bagian
-lain adalah kontrak internal SR-POS; nama tersebut bukan klaim bahwa Figma
-menggunakan penamaan yang sama.
+This document is the working reference for implementing the SR-POS design
+system from the Figma reference. Values labeled **Figma exact** come from
+extracted reference data. Semantic names and implementation rules elsewhere
+are SR-POS internal contracts; they do not imply that Figma uses the same
+naming.
 
-## Sumber
+## Sources
 
 - Figma file: [`kE0ttvjNMBfzLofbm2Bklc`](https://www.figma.com/design/kE0ttvjNMBfzLofbm2Bklc/Mobile-Apps-%E2%80%93-Prototyping-Kit--Community---Copy-)
 - Components: [node `6:757`](https://www.figma.com/design/kE0ttvjNMBfzLofbm2Bklc/Mobile-Apps-%E2%80%93-Prototyping-Kit--Community---Copy-?node-id=6-757)
@@ -15,41 +15,39 @@ menggunakan penamaan yang sama.
 - Badge: [node `261:6762`](https://www.figma.com/design/kE0ttvjNMBfzLofbm2Bklc/Mobile-Apps-%E2%80%93-Prototyping-Kit--Community---Copy-?node-id=261-6762)
 - Validation screen: [node `283:6138`](https://www.figma.com/design/kE0ttvjNMBfzLofbm2Bklc/Mobile-Apps-%E2%80%93-Prototyping-Kit--Community---Copy-?node-id=283-6138)
 
-## Status ekstraksi
+## Extraction status
 
-Seluruh keluarga dan komponen pada katalog sudah diinventarisasi melalui panel
-Layers dan tersedia sebagai widget Flutter reusable di
-`lib/core/design_system/components`. Primitive, semantic theme, tipografi,
-spacing, radius, sizing, border, dan motion dipusatkan di
-`lib/core/design_system`. Screen validasi memakai komponen publik melalui satu
-barrel import, bukan style ad hoc.
+All component families in the catalog have been inventoried through the Figma
+Layers panel and are available as reusable Flutter widgets in
+`lib/core/design_system/components`. Primitives, semantic theme, typography,
+spacing, radii, sizing, borders, and motion are centralized in
+`lib/core/design_system`. The validation screen uses public components through
+a single barrel import rather than ad hoc styling.
 
-Seluruh family preview memiliki golden visual pada viewport `390` logical
-pixel. Golden tersebut memeriksa komposisi default, font Poppins, token
-warna, constraint, dan overflow. Screen validasi memiliki golden terpisah pada
-viewport `375 × 812`.
+Visual previews may be created temporarily for inspection during
+implementation and must be cleaned up afterward, as described in `AGENTS.md`.
 
-Informasi berikut belum boleh dianggap sebagai nilai Figma exact sampai
-diekstrak langsung dari node terkait:
+Do not treat the following as Figma-exact values until they have been extracted
+directly from the relevant nodes:
 
-- line height dan letter spacing tipografi;
-- spacing, grid, radius, border width, elevation, serta shadow;
-- ukuran icon dan target sentuh;
-- state dan varian setiap komponen;
-- durasi serta easing motion.
+- typography line height and letter spacing;
+- spacing, grid, radii, border widths, elevation, and shadows;
+- icon sizes and touch targets;
+- component states and variants;
+- motion duration and easing.
 
-Nilai sementara untuk hal-hal tersebut, bila dibutuhkan selama implementasi,
-harus diberi komentar `assumption`, ditempatkan di satu token terpusat, dan
-diganti setelah validasi. Jangan menyebarkan nilai sementara sebagai literal di
-screen atau komponen.
+If temporary values for these properties are needed during implementation,
+mark them with an `assumption` comment, keep them in one centralized token, and
+replace them after validation. Do not spread temporary values as literals
+through screens or components.
 
-## Warna — Figma exact
+## Colors — Figma exact
 
-Urutan swatch dipertahankan sesuai data ekstraksi. Label `01`, `02`, dan
-seterusnya hanya penanda urutan dalam dokumen ini, bukan nama ataupun skala
-resmi dari Figma.
+Swatch order is preserved from the extracted data. Labels `01`, `02`, and so on
+are ordering markers used only in this document; they are not official Figma
+names or scales.
 
-| Keluarga | 01 | 02 | 03 | 04 | 05 |
+| Family | 01 | 02 | 03 | 04 | 05 |
 | --- | --- | --- | --- | --- | --- |
 | Highlight | `#006FFD` | `#2897FF` | `#6FBAFF` | `#B4DBFF` | `#EAF2FF` |
 | Neutral light | `#C5C6CC` | `#D4D6DD` | `#E8E9F1` | `#F8F9FE` | `#FFFFFF` |
@@ -58,27 +56,27 @@ resmi dari Figma.
 | Warning | `#E86339` | `#FFB37C` | `#FFF4E4` | — | — |
 | Error | `#ED3241` | `#FF616D` | `#FFE2E5` | — | — |
 
-### Aturan semantik warna
+### Semantic color rules
 
-1. Simpan nilai di atas sebagai primitive yang immutable, misalnya
-   `SrColorPrimitives.highlight01`. Nama ini adalah konvensi implementasi
-   SR-POS, bukan nama Figma.
-2. Komponen hanya memakai semantic alias seperti `brandPrimary`,
+1. Store the values above as immutable primitives, such as
+   `SrColorPrimitives.highlight01`. This is an SR-POS implementation convention,
+   not a Figma name.
+2. Components may only use semantic aliases such as `brandPrimary`,
    `textPrimary`, `textSecondary`, `surfaceBase`, `borderDefault`,
-   `statusSuccess`, `statusWarning`, atau `statusError`.
-3. Relasi semantic alias ke primitive harus ditentukan dari konteks node dan
-   hasil uji kontras. Jangan menyimpulkan peran hanya dari posisi swatch.
-4. Jangan menulis hex literal di screen atau komponen. Semua warna harus masuk
-   melalui theme atau token.
-5. Nama token menjelaskan peran, bukan lokasi pemakaian. Hindari nama seperti
-   `loginBlue`, `homeGrey`, atau `cardColor`.
+   `statusSuccess`, `statusWarning`, or `statusError`.
+3. Map semantic aliases to primitives based on the node context and contrast
+   results. Do not infer a role from a swatch's position alone.
+4. Do not write hex literals in screens or components. All colors must come
+   through the theme or tokens.
+5. Token names describe a role, not a usage location. Avoid names such as
+   `loginBlue`, `homeGrey`, or `cardColor`.
 
-## Tipografi
+## Typography
 
-Font family default produk: **Poppins**. Scale ukuran dan weight di bawah tetap
-mengikuti ekstraksi Figma.
+The product's default font family is **Poppins**. The size and weight scale
+below follows the Figma extraction.
 
-| Kategori | Style | Weight | Size |
+| Category | Style | Weight | Size |
 | --- | --- | --- | ---: |
 | Heading | H1 | ExtraBold | 24 |
 | Heading | H2 | ExtraBold | 18 |
@@ -95,23 +93,23 @@ mengikuti ekstraksi Figma.
 | Action | S | SemiBold | 10 |
 | Caption | M | SemiBold | 10 |
 
-Angka size mengikuti data ekstraksi; satuan implementasi Flutter adalah logical
-pixel. Line height dan letter spacing masih perlu diekstrak dan tidak boleh
-ditebak sebagai Figma exact.
+The sizes follow the extracted data; Flutter implementation units are logical
+pixels. Line height and letter spacing still need to be extracted and must not
+be guessed as Figma-exact values.
 
-Konvensi mapping Flutter berikut adalah keputusan implementasi, bukan data
-tambahan dari Figma: Regular → `FontWeight.w400`, Medium → `w500`, SemiBold →
-`w600`, Bold → `w700`, dan ExtraBold → `w800`.
+The following Flutter weight mapping is an implementation decision, not
+additional Figma data: Regular → `FontWeight.w400`, Medium → `w500`, SemiBold →
+`w600`, Bold → `w700`, and ExtraBold → `w800`.
 
-Gunakan nama role yang stabil seperti `headingH1`, `bodyM`, `actionL`, dan
-`captionM`. Screen tidak boleh membuat `TextStyle` ad hoc apabila role yang
-sesuai sudah tersedia.
+Use stable role names such as `headingH1`, `bodyM`, `actionL`, and `captionM`.
+Screens must not create ad hoc `TextStyle` values when a suitable role already
+exists.
 
-## Katalog komponen
+## Component catalog
 
-| Keluarga | Komponen yang telah diinventarisasi |
+| Family | Inventoried components |
 | --- | --- |
-| Assets | Icon, Image, Video, Avatar |
+| Assets | Icon, Image, File Picker, Video, Avatar |
 | Informative | Banner, Toast, Dialog, Tooltip, Badge |
 | Control | Button, Content Switcher, Action Sheet, Filter, Tabs |
 | Input | Checkbox, Radio Button, Toggle, Star Rating, Slider, Number Input, Text Field, Text Area, Dropdown, Search Bar |
@@ -123,117 +121,116 @@ sesuai sudah tersedia.
 | E-commerce | Shopping Cart Item |
 | Device | Overlay, Device Components |
 
-### Varian terkonfirmasi dari Figma
+### Figma-confirmed variants
 
-Daftar berikut hanya menyatakan nama, state, atau komposisi yang tampak pada
-Layers/node terkait. Daftar ini tidak menetapkan ukuran, spacing, radius, atau
-nilai visual lain yang belum diekstrak.
+The following list records only names, states, or compositions visible in the
+relevant Layers/nodes. It does not define sizes, spacing, radii, or other visual
+values that have not been extracted.
 
-- **Button**: 
-  Primary, Secondary, dan Tertiary. Figma menulis varian ketiga sebagai
-  `Terciary`; implementasi memakai ejaan `Tertiary` dan menyimpan catatan typo
-  ini untuk traceability. Implementasi SR-POS juga menyediakan variant
-  `destructive` (bukan variant Figma) dengan foreground dari semantic
-  `ColorScheme.error`, memakai layout text-button yang sama.
-- **Dialog**: varian 2-button dan 3-button. `SrDialog` accepts flexible body
+- **Button**: Primary, Secondary, and Tertiary. Figma spells the third variant
+  `Terciary`; the implementation uses `Tertiary` and retains a note about the
+  typo for traceability. SR-POS also provides a `destructive` variant (not a
+  Figma variant) with a foreground from semantic `ColorScheme.error` and the
+  same text-button layout.
+- **Dialog**: 2-button and 3-button variants. `SrDialog` accepts flexible body
   `children` between its title/message and actions, an optional upper-right
   close affordance, compact spacing, and a per-dialog width cap. The default
   maximum width of 640 logical pixels is an implementation assumption for
   tablet/desktop layouts.
-- **Badge**: dot memakai lingkaran `8 × 8`; count satu digit memakai
-  `CircleBorder` pada constraint persegi `24 × 24`; count lebih panjang dan
-  label memakai bentuk pill dengan tinggi minimum `24`.
-- **Content Switcher**: layer section/item serta container; komposisi 2 sampai 4
-  segment terlihat pada referensi.
-- **Action Sheet**: `.Action` dan `Action Sheet`.
-- **Tabs**: `.Tab Item` dan `Tabs`.
+- **Badge**: A dot uses an `8 × 8` circle; a one-digit count uses `CircleBorder`
+  within `24 × 24` square constraints; longer counts and labels use a pill shape
+  with a minimum height of `24`.
+- **Content Switcher**: section/item layers and a container; the reference shows
+  compositions with 2 to 4 segments.
+- **Action Sheet**: `.Action` and `Action Sheet`.
+- **Tabs**: `.Tab Item` and `Tabs`.
 - **Search Bar**:
-  state empty dengan placeholder, focused dengan text/cursor, dan filled dengan
-  text. Property yang terkonfirmasi adalah `Placeholder` dan `Text`. Semua input
-  teks dengan placeholder (`Text Field`, `Text Area`, `Dropdown`, `Search Bar`,
-  dan `Message Input`) menurunkan metrik tipografinya dari style value aktif;
-  placeholder dan label yang tampil di dalam field saat kosong memakai
-  ukuran/metrics yang sama dan hanya berbeda pada warna semantik.
+  empty state with a placeholder, focused state with text/cursor, and filled
+  state with text. The confirmed properties are `Placeholder` and `Text`. All
+  text inputs with placeholders (`Text Field`, `Text Area`, `Dropdown`, `Search
+  Bar`, and `Message Input`) derive their typography metrics from the active
+  value style; the placeholder and label shown inside an empty field use the
+  same size/metrics and differ only in semantic color.
 - **Card**:
-  komposisi vertical dengan media/icon/avatar, title, subtitle, description,
-  optional tag, dan optional button; komposisi horizontal dengan
-  media/avatar/icon serta trailing button/chevron/none.
+  vertical composition with media/icon/avatar, title, subtitle, description,
+  optional tag, and optional button; horizontal composition with
+  media/avatar/icon and an optional trailing button/chevron.
 
-Setiap komponen menyediakan API berbasis intent dan mengambil nilai visual dari
-theme/token. Pengembangan varian baru tetap harus mencatat:
+Each component provides an intent-based API and gets visual values from the
+theme/tokens. Development of a new variant must document:
 
-- anatomy dan hierarchy;
-- ukuran serta density;
-- state (`enabled`, `pressed`, `focused`, `disabled`, `loading`, dan state lain
-  yang benar-benar tampak pada referensi);
-- property/variant Figma dan nilai default;
-- token warna, tipografi, radius, spacing, border, dan icon yang digunakan;
-- perilaku interaksi dan semantics.
+- anatomy and hierarchy;
+- size and density;
+- states (`enabled`, `pressed`, `focused`, `disabled`, `loading`, and any other
+  states actually shown in the reference);
+- Figma property/variant and default value;
+- color, typography, radius, spacing, border, and icon tokens used;
+- interaction behavior and semantics.
 
-### Layout dan density Sale tablet
+### Sale tablet layout and density
 
-Komposisi Sale mengadaptasi shell dan katalog dari project `yosher-pos/pos-fe`:
-header selebar layar, rail navigasi ikon dan label, filter kategori horizontal,
-pencarian dengan filter rekomendasi, katalog di kiri, serta panel pesanan di
-kanan. Untuk tablet portrait, katalog dan panel pesanan ditumpuk. Sidebar
-dimulai pada lebar 208 logical pixel (asumsi implementasi) agar label tetap
-terbaca dengan ruang lebih ringkas, dan dapat diringkas menjadi rail ikon 80
-logical pixel; transisi menghormati preferensi reduced motion dan nama item
-tetap tersedia untuk aksesibilitas. Tombol hide/show berada inline setelah
-identitas outlet.
+The Sale composition adapts the shell and catalog from the `yosher-pos/pos-fe`
+project: a full-width header, icon-and-label navigation rail, horizontal
+category filters, search with a recommendation filter, the catalog on the left,
+and the order panel on the right. On portrait tablets, the catalog and order
+panel stack vertically. The sidebar starts at 208 logical pixels (an
+implementation assumption) so labels remain readable in a compact layout, and
+can collapse to an 80-logical-pixel icon rail. Transitions respect reduced
+motion preferences, and item names remain available for accessibility. The
+hide/show button sits inline after the outlet identity.
 
-Varian `SrComponentSize.small` adalah asumsi density untuk layar Sale, bukan
-ekstraksi ukuran Figma. Spacing-nya dipusatkan di `SrComponentMetrics` dan
-target interaksi tetap minimal `48 × 48` logical pixels.
-Kontrol jumlah item dan panah gulir pada pesanan Sale memakai lingkaran visual
-`32 × 32` logical pixels di dalam target sentuh `48 × 48` logical pixels; panah
-melayang di bawah daftar hanya saat masih ada item yang dapat digulir.
-`SrListItemSelectedStyle.primary` memakai pasangan semantic
-`ColorScheme.primary` / `onPrimary` dan radius medium untuk latar rounded menu
-aktif; style selected `subtle` tetap menjadi default.
+The `SrComponentSize.small` variant is a density assumption for the Sale
+screen, not an extraction of a Figma size. Its spacing is centralized in
+`SrComponentMetrics`, and the interaction target remains at least `48 × 48`
+logical pixels. Sale order quantity controls and the scroll arrow use a
+`32 × 32` logical-pixel visual circle within a `48 × 48` logical-pixel touch
+target; the floating arrow appears below the list only when more items can be
+scrolled into view.
+`SrListItemSelectedStyle.primary` uses the semantic `ColorScheme.primary` /
+`onPrimary` pair and a medium radius for the active menu's rounded background;
+the `subtle` selected style remains the default.
 
-## Naming dan penggunaan di kode
+## Naming and usage in code
 
-Konvensi berikut adalah aturan internal SR-POS:
+The following conventions are SR-POS internal rules:
 
-- prefix public component dan token dengan `Sr`, misalnya `SrButton`,
-  `SrTextField`, `SrTypography`, dan `SrSemanticColors`;
-- gunakan lower camel case untuk token Dart (`headingH1`, `spaceM`) dan Upper
-  Camel Case untuk type/widget (`SrButton`);
-- pisahkan primitive dari semantic token; widget hanya bergantung pada semantic
-  token;
-- satu komponen memiliki API berbasis intent/variant, bukan boolean yang saling
-  bertabrakan;
-- komponen lintas screen berada di design system, sedangkan komponen yang hanya
-  menyusun satu feature tetap berada di feature tersebut;
-- semua state visual mengambil nilai dari theme agar konsisten dan mudah
-  dipelihara;
-- penambahan token baru harus menyertakan sumber node atau diberi label
-  `assumption` sampai tervalidasi.
+- prefix public components and tokens with `Sr`, such as `SrButton`,
+  `SrTextField`, `SrTypography`, and `SrSemanticColors`;
+- use lower camel case for Dart tokens (`headingH1`, `spaceM`) and Upper Camel
+  Case for types/widgets (`SrButton`);
+- separate primitives from semantic tokens; widgets depend only on semantic
+  tokens;
+- give each component an intent-/variant-based API instead of colliding
+  booleans;
+- keep cross-screen components in the design system and compositions used by
+  only one feature in that feature;
+- derive all visual states from the theme for consistency and maintainability;
+- include a source node for each new token, or label it `assumption` until
+  validated.
 
 ## Accessibility baseline
 
-Ketentuan berikut adalah persyaratan implementasi, bukan ukuran Figma exact:
+The following are implementation requirements, not Figma-exact measurements:
 
-- pertahankan kontras minimum WCAG 2.1 AA: `4.5:1` untuk teks normal dan `3:1`
-  untuk teks besar serta elemen UI penting;
-- jangan memakai warna sebagai satu-satunya penanda success, warning, error,
-  selected, atau disabled; sertakan icon, label, atau perubahan bentuk;
-- sediakan label `Semantics`, urutan fokus, dan dukungan keyboard yang jelas
-  pada kontrol interaktif;
-- target sentuh minimal `44 × 44` logical pixel; gunakan `48 × 48` bila mengikuti
-  default Material;
-- dukung text scaling tanpa clipping dan jangan mengunci tinggi komponen teks
-  sebelum diuji pada skala yang lebih besar;
-- hubungkan helper/error text dengan input terkait dan umumkan perubahan status
-  penting kepada screen reader;
-- hormati preferensi reduced motion untuk animasi non-esensial.
+- maintain WCAG 2.1 AA minimum contrast: `4.5:1` for normal text and `3:1` for
+  large text and important UI elements;
+- do not use color as the only indicator for success, warning, error, selected,
+  or disabled states; include an icon, label, or shape change;
+- provide clear `Semantics` labels, focus order, and keyboard support for
+  interactive controls;
+- use touch targets of at least `44 × 44` logical pixels; use `48 × 48` when
+  following the Material default;
+- support text scaling without clipping, and do not lock text component heights
+  before checking larger scales;
+- associate helper/error text with its input and announce important status
+  changes to screen readers;
+- respect reduced motion preferences for non-essential animation.
 
-## Checklist sebelum komponen dinyatakan siap pakai
+## Checklist before a component is considered ready for use
 
-- Variant dan state yang dibutuhkan screen sudah cocok dengan node Figma.
-- Tidak ada warna atau style teks literal di luar token/theme.
-- Asumsi tercatat dan terpisah dari nilai Figma exact.
-- Semantics, focus, text scaling, dan contrast sudah diperiksa.
-- Widget test mencakup state utama; golden test menggunakan viewport screen
-  referensi bila fidelity visual perlu dijaga.
+- The variants and states required by the screen match the Figma node.
+- No literal colors or text styles exist outside tokens/theme.
+- Assumptions are documented and distinguished from Figma-exact values.
+- Semantics, focus, text scaling, and contrast have been checked.
+- Key states, semantics, focus, text scaling, and contrast are verified during
+  implementation; temporary test/preview artifacts are cleaned up afterward.

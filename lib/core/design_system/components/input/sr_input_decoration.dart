@@ -5,6 +5,7 @@ import 'package:sr_pos/core/design_system/components/sr_component_size.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_borders.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_radii.dart';
 import 'package:sr_pos/core/design_system/foundations/sr_spacing.dart';
+import 'package:sr_pos/core/design_system/foundations/sr_typography.dart';
 
 /// Builds the shared decoration used by SR-POS text-like inputs.
 ///
@@ -37,12 +38,40 @@ InputDecoration srInputDecoration(
     context,
     valueStyle: valueStyle,
   );
+  final helperStyle = size == SrComponentSize.small
+      ? SrTypography.bodyExtraSmall.copyWith(color: colors.onSurfaceVariant)
+      : null;
+  final helper = helperText == null
+      ? null
+      : size == SrComponentSize.small
+      ? Transform.translate(
+          offset: Offset(
+            (Directionality.of(context) == TextDirection.rtl ? 1 : -1) *
+                (contentPadding.left + SrSpacing.space4),
+            0,
+          ),
+          child: Text(
+            helperText,
+            style: helperStyle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        )
+      : null;
+  final error = errorText == null
+      ? null
+      : size == SrComponentSize.small
+      ? srInputErrorWidget(context, errorText, size: size)
+      : null;
 
   return InputDecoration(
     labelText: labelText,
     hintText: hintText,
-    helperText: helperText,
-    errorText: errorText,
+    helper: errorText == null ? helper : null,
+    helperText: size == SrComponentSize.small ? null : helperText,
+    helperStyle: helperStyle,
+    error: error,
+    errorText: size == SrComponentSize.small ? null : errorText,
     labelStyle: placeholderStyle,
     hintStyle: placeholderStyle,
     prefixIcon: prefixIcon,
@@ -77,5 +106,33 @@ InputDecoration srInputDecoration(
         width: SrBorders.thin,
       ),
     ),
+  );
+}
+
+/// Renders validation copy with the same leading edge as small-field helpers.
+Widget srInputErrorWidget(
+  BuildContext context,
+  String message, {
+  required SrComponentSize size,
+}) {
+  final colors = Theme.of(context).colorScheme;
+  final isCompact = size == SrComponentSize.small;
+  final text = Text(
+    message,
+    style: (isCompact ? SrTypography.bodyExtraSmall : SrTypography.bodySmall)
+        .copyWith(color: colors.error),
+    maxLines: isCompact ? 1 : null,
+    overflow: isCompact ? TextOverflow.ellipsis : null,
+  );
+  if (!isCompact) return text;
+
+  final contentPadding = SrComponentMetrics.smallInputHorizontalPadding;
+  return Transform.translate(
+    offset: Offset(
+      (Directionality.of(context) == TextDirection.rtl ? 1 : -1) *
+          (contentPadding + SrSpacing.space4),
+      0,
+    ),
+    child: text,
   );
 }

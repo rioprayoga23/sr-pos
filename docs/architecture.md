@@ -34,12 +34,13 @@ and error handling stay outside widgets. Models exposed across layers are
 immutable, and state updates flow in one direction from repositories through
 view models to views.
 
-## Testing
+## Temporary verification
 
-- Unit-test repositories and view models independently with fakes.
-- Widget-test design-system variants, interaction states, and semantics.
-- Widget-test screens with injected fake repositories.
-- Use golden tests only for stable, deterministic visual contracts.
+Tests and previews may be created temporarily when they help verify a change.
+Run verification before cleanup, then remove all test code, preview code,
+images/baselines, screenshots, and directories used only for tests or previews
+before completing the work. Do not remove runtime assets used by the app. See
+`AGENTS.md` for the full agent rules.
 
 ## Naming
 

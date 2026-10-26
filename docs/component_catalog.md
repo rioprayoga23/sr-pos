@@ -8,7 +8,7 @@ import 'package:sr_pos/core/design_system/design_system.dart';
 
 | Family      | Public components                                                                                                                          |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| Assets      | `SrIcon`, `SrImagePlaceholder`, `SrVideoPlaceholder`, `SrAvatar`                                                                           |
+| Assets      | `SrIcon`, `SrImagePlaceholder`, `SrFilePicker`, `SrVideoPlaceholder`, `SrAvatar`                                                        |
 | Informative | `SrBanner`, `SrToast`, `SrDialog`, `SrTooltip`, `SrBadge`                                                                                  |
 | Control     | `SrButton`, `SrContentSwitcher`, `SrActionSheet`, `SrFilter`, `SrTabs`                                                                     |
 | Input       | `SrCheckbox`, `SrRadio`, `SrToggle`, `SrStarRating`, `SrSlider`, `SrNumberInput`, `SrTextField`, `SrTextArea`, `SrDropdown`, `SrSearchBar` |
@@ -28,6 +28,11 @@ existing components expose `SrComponentSize.small` and `SrComponentSize.medium`
 `SrShoppingCartItem`. The small density is an assumption derived from the Sale
 reference, not a claim about an extracted Figma variant; it reduces visual
 padding while preserving the 48 px touch-target baseline.
+Helper text on small input fields uses the `SrTypography.bodyExtraSmall` role
+and aligns with the outer leading edge of its field.
+`SrFilePicker` renders an accessible image/file selection target with optional
+image or filename preview; choosing and persisting files are injected by the
+consuming feature. Its title and supporting copy use the input-value text role.
 The compact cart image uses a 64 × 64 px square surface so it nearly fills the
 row height while keeping the lower edge aligned with the quantity controls.
 
@@ -58,15 +63,21 @@ It can render an accessible close affordance with `onClose`, use compact spacing
 and accept a per-dialog `maxWidth`; the default maximum width remains 640 logical
 pixels (assumption) on wide layouts.
 
-Interactive previews live in `lib/core/design_system/previews`. Run them with:
-
-```bash
-flutter widget-preview start --web-server --no-pub
-```
-
-Visual regression baselines for every family live in
-`test/core/design_system/previews/goldens`. They use a fixed DPR of `1` so the
-output is deterministic across local and CI environments.
+`SrToast` is a compact, top-center notification with semantic tone variants
+(`neutral`, `info`, `success`, `warning`, and `error`). `showSrToast` accepts an
+optional title, supporting message, core-composed content, action, and dismiss
+control so the same component can present short confirmations or richer status
+updates. Its compact default composition uses a semantic container and border,
+a solid rounded icon tile, one concise high-contrast message, and a trailing
+dismiss action. Status glyphs use the same outlined Material icon family as
+navigation and sit directly on their semantic tile, giving every tone the same
+clean silhouette and breathing room.
+`SrComponentSize.small` is the default at every viewport width, from phones and
+tablets to laptops and large displays. It uses a 32-pixel icon tile,
+12-pixel message, 48-pixel row height, and a 320-pixel maximum reading width,
+while preserving the 48-pixel dismiss target. A caller may explicitly request
+the medium variant. Toasts remain top-centered, capped in width, and respect
+safe-area insets.
 
 Feature-specific compositions remain inside their feature. For example,
 `ProductGridCard` composes `SrCard` and `SrImagePlaceholder` without becoming a

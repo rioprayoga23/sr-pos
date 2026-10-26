@@ -1,19 +1,19 @@
 # SR-POS
 
-Flutter POS application with a reusable design system extracted from the
-referenced Figma prototyping kit. The current implementation is local-only and
-does not integrate a backend.
+SR-POS is a Flutter point-of-sale application for processing sales and managing
+the product catalog, including ingredient inventory. The app currently uses
+local sample data and does not connect to a backend. A shared design system
+keeps the interface consistent across its features.
 
 ## Structure
 
 ```text
 lib/
 ├── app/                         # composition root
-├── core/design_system/          # tokens, themes, components, previews
-└── features/product_search/
-    ├── data/                    # repository implementations
-    ├── domain/                  # models and repository contracts
-    └── presentation/            # state, view model, widgets, screen
+├── core/design_system/          # tokens, themes, shared components
+└── features/
+    ├── product_search/          # product search and catalog
+    └── sale/                    # point-of-sale and ingredient inventory
 ```
 
 See [architecture](docs/architecture.md), [design system](docs/design_system.md),
@@ -26,6 +26,7 @@ Repository-wide development rules for contributors and Codex sessions live in
 ```bash
 flutter run
 flutter analyze --no-pub
-flutter test --no-pub
-flutter widget-preview start --web-server --no-pub
 ```
+
+Tests and previews are created only temporarily when needed for verification,
+then removed before work is completed. See the [agent rules](AGENTS.md).

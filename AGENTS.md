@@ -1,149 +1,153 @@
 # SR-POS Repository Instructions
 
-Aturan ini berlaku untuk seluruh repository dan wajib diikuti pada setiap
-implementasi, refactor, review, dan perbaikan bug. Jangan melemahkan atau
-menyimpang dari aturan ini tanpa instruksi eksplisit dari user.
+These rules apply across the repository and must be followed for every
+implementation, refactor, review, and bug fix. Do not weaken or deviate from
+them unless the user explicitly instructs you to do so.
 
-## Sumber kebenaran
+## Sources of truth
 
-- Untuk struktur dan dependency, ikuti `docs/architecture.md`.
-- Untuk pekerjaan UI, ikuti `docs/design_system.md` dan
+- For structure and dependencies, follow `docs/architecture.md`.
+- For UI work, follow `docs/design_system.md` and
   `docs/component_catalog.md`.
-- API design system yang benar adalah public barrel
-  `lib/core/design_system/design_system.dart` dan implementasi aktualnya.
-- Baca dokumen yang relevan sebelum mengubah area tersebut. Jika dokumentasi
-  dan kode aktual bertentangan, jangan menebak atau membuat kontrak baru;
-  laporkan perbedaannya dan minta keputusan user.
+- The authoritative design-system API is the public barrel
+  `lib/core/design_system/design_system.dart` and its actual implementation.
+- Read the relevant documents before changing an area. If the documentation
+  conflicts with the actual code, do not guess or create a new contract; report
+  the discrepancy and ask the user to decide.
 
-## Aturan UI dan core yang tidak boleh dilanggar
+## UI and core rules
 
-1. Kode di `lib/app/**` dan `lib/features/**` harus mengimpor design system
-   hanya melalui:
+1. Code in `lib/app/**` and `lib/features/**` must import the design system
+   only through:
 
    ```dart
    import 'package:sr_pos/core/design_system/design_system.dart';
    ```
 
-   Jangan melakukan deep import ke file komponen, category barrel, helper
-   internal, atau folder `components/shared`. Deep import hanya diperbolehkan
-   di dalam implementasi core serta test/preview yang memang menguji internal.
+   Do not deep-import component files, category barrels, internal helpers, or
+   the `components/shared` directory. Deep imports are allowed only within the
+   core implementation and tests/previews that specifically exercise internals.
 
-2. Sebelum menulis UI, periksa `docs/component_catalog.md` dan public barrel.
-   Jika komponen atau variant `Sr*` yang sesuai sudah ada, pemakaiannya wajib.
-   Contoh: gunakan `SrButton`, `SrTextField`, `SrSearchBar`, `SrCard`, `SrIcon`,
-   `SrLoader`, dan komponen `Sr*` lain; jangan menggantinya dengan widget
-   Material/Cupertino mentah atau tampilan rakitan sendiri.
+2. Before writing UI, inspect `docs/component_catalog.md` and the public barrel.
+   If a suitable `Sr*` component or variant already exists, you must use it.
+   For example, use `SrButton`, `SrTextField`, `SrSearchBar`, `SrCard`,
+   `SrIcon`, `SrLoader`, and other `Sr*` components instead of raw
+   Material/Cupertino widgets or custom-built visuals.
 
-3. Primitive Flutter untuk struktur/layout tetap boleh digunakan jika tidak
-   ada ekuivalen di core, misalnya `Scaffold`, `SafeArea`, `Row`, `Column`,
-   `Flex`, `Expanded`, `Padding`, `SizedBox`, `Align`, `Stack`, `Sliver*`, dan
-   builder. Primitive tersebut hanya boleh menyusun screen dan komponen `Sr*`;
-   jangan dipakai untuk menciptakan ulang visual atau perilaku komponen yang
-   sudah tersedia di core. `Text` boleh dipakai karena belum ada `SrText`,
-   tetapi harus mewarisi theme atau memakai role dari `SrTypography`.
+3. Flutter layout primitives may be used when core has no equivalent, such as
+   `Scaffold`, `SafeArea`, `Row`, `Column`, `Flex`, `Expanded`, `Padding`,
+   `SizedBox`, `Align`, `Stack`, `Sliver*`, and builders. These primitives may
+   only arrange screens and `Sr*` components; do not use them to recreate the
+   visuals or behavior of components already available in core. `Text` may be
+   used because there is no `SrText`, but it must inherit the theme or use a
+   role from `SrTypography`.
 
-4. Semua keputusan visual harus berasal dari core: semantic `ColorScheme`/
-   extension theme, `SrTypography`, `SrSpacing`, `SrSizing`, `SrRadii`,
-   `SrBorders`, dan `SrMotion`. Di luar core, jangan menambahkan hex/color
-   literal, `Colors.*`, `TextStyle` ad hoc, spacing, radius, border, ukuran icon,
-   atau motion literal untuk styling. Constraint layout yang benar-benar
-   spesifik terhadap screen boleh menjadi private named constant bila tidak ada
-   token yang sesuai.
+4. All visual decisions must come from core: semantic `ColorScheme`/theme
+   extensions, `SrTypography`, `SrSpacing`, `SrSizing`, `SrRadii`, `SrBorders`,
+   and `SrMotion`. Outside core, do not add literal hex/colors, `Colors.*`, ad
+   hoc `TextStyle`, spacing, radii, borders, icon sizes, or motion values for
+   styling. Truly screen-specific layout constraints may be private named
+   constants when no matching token exists.
 
-5. Jangan memakai primitive color `SrColors` langsung di screen/feature.
-   Gunakan semantic theme. Nilai desain sementara harus terpusat, diberi
-   komentar `assumption`, dan tidak boleh disebarkan sebagai literal.
+5. Do not use `SrColors` primitives directly in screens/features. Use the
+   semantic theme. Temporary design values must be centralized, marked with an
+   `assumption` comment, and must not be scattered as literals.
 
-## Gerbang persetujuan komponen kustom
+## Custom component approval gate
 
-- Secara default, **dilarang membuat** komponen UI reusable baru, komponen
-  visual feature baru, komponen `Sr*` baru, variant baru, token baru, atau
-  wrapper yang membentuk kontrak visual baru.
-- Kebutuhan screen/page tidak otomatis menjadi izin membuat komponen kustom.
-  Izin hanya sah bila user secara eksplisit meminta atau menyetujui komponen
-  tersebut pada task yang sedang dikerjakan.
-- Jika kebutuhan tidak dapat dipenuhi oleh katalog core, hentikan bagian UI
-  tersebut dan laporkan: komponen/variant yang kurang, kebutuhan perilakunya,
-  dan komponen `Sr*` terdekat. Tunggu instruksi user; jangan diam-diam memakai
-  widget mentah sebagai substitusi.
-- Private widget hanya boleh memecah struktur screen dan mengomposisikan
-  primitive layout dengan komponen `Sr*`. Private widget tidak boleh
-  memperkenalkan visual, interaction pattern, atau reusable API baru.
-- Komponen kustom yang sudah ada boleh dipakai, tetapi isi visual/interaktifnya
-  tetap harus tersusun dari API core.
-- Setelah user memberi izin, tempatkan komponen lintas-screen di
-  `core/design_system` dengan prefix `Sr`; tempatkan komposisi yang benar-benar
-  khusus satu feature di `features/<feature>/presentation/widgets`. Tetap
-  gunakan token core, accessibility baseline, public barrel, dokumentasi,
-  preview, dan test yang sesuai.
+- By default, **do not create** reusable UI components, feature-specific visual
+  components, new `Sr*` components, variants, tokens, or wrappers that establish
+  a new visual contract.
+- A screen/page requirement does not by itself authorize a custom component.
+  Authorization is valid only when the user explicitly requests or approves
+  that component for the current task.
+- If the core catalog cannot meet a requirement, stop that part of the UI and
+  report the missing component/variant, its required behavior, and the closest
+  existing `Sr*` component. Wait for the user's direction; do not silently use a
+  raw widget as a substitute.
+- Private widgets may only split screen structure and compose layout
+  primitives with `Sr*` components. They must not introduce new visuals,
+  interaction patterns, or reusable APIs.
+- Existing custom components may be used, but their visual and interactive
+  contents must still be composed from core APIs.
+- Once the user authorizes a component, place cross-screen components in
+  `core/design_system` with the `Sr` prefix, and feature-specific compositions
+  in `features/<feature>/presentation/widgets`. Continue to use core tokens,
+  accessibility baselines, the public barrel, and documentation. Tests and
+  previews may be created temporarily for verification, but must be removed
+  before the work is declared complete.
 
-## Arsitektur wajib
+## Required architecture
 
-- Pertahankan feature-first MVVM:
+- Preserve feature-first MVVM:
 
   ```text
   lib/
-  ├── app/                         # composition root dan navigation
-  ├── core/design_system/          # shared UI, theme, dan token
+  ├── app/                         # composition root and navigation
+  ├── core/design_system/          # shared UI, theme, and tokens
   └── features/<feature>/
-      ├── data/                    # repository implementation dan data source
-      ├── domain/                  # immutable model dan repository contract
-      └── presentation/            # screen, view model, state, dan widget
+      ├── data/                    # repository implementations and data sources
+      ├── domain/                  # immutable models and repository contracts
+      └── presentation/            # screens, view models, state, and widgets
   ```
 
-- `presentation` boleh bergantung pada `domain` dan public design system,
-  tetapi tidak boleh mengimpor concrete repository atau data source.
-- `data` mengimplementasikan contract dari `domain` dan tidak boleh bergantung
-  pada `presentation`.
-- `domain` harus bebas dari Flutter UI dan detail infrastructure.
-- `app` adalah composition root: buat concrete dependency di sana dan inject
-  melalui constructor. Jangan memakai global service locator.
-- View hanya merender state dan meneruskan event. Loading, error, filtering,
-  sorting, transformasi data, dan interaction/data logic berada di view model.
-- Pertahankan aliran satu arah repository -> view model -> immutable UI state
-  -> view. Collection yang diekspos lintas layer harus immutable/unmodifiable.
-- Pertahankan pola `ChangeNotifier` yang sekarang. Jangan menambah state
-  management, DI, routing, atau framework arsitektur baru tanpa instruksi
-  eksplisit user.
-- Buat service hanya untuk I/O nyata seperti API, database, file, atau platform
-  integration. Jangan membuat layer kosong atau abstraksi spekulatif.
-- Jangan mengubah struktur folder atau arah dependency yang sudah ditentukan
-  tanpa persetujuan eksplisit user.
+- `presentation` may depend on `domain` and the public design system, but must
+  not import concrete repositories or data sources.
+- `data` implements contracts from `domain` and must not depend on
+  `presentation`.
+- `domain` must remain free of Flutter UI and infrastructure details.
+- `app` is the composition root: create concrete dependencies there and inject
+  them through constructors. Do not use a global service locator.
+- Views only render state and forward events. Loading, errors, filtering,
+  sorting, data transformations, and interaction/data logic belong in view
+  models.
+- Preserve the one-way flow repository -> view model -> immutable UI state ->
+  view. Collections exposed across layers must be immutable/unmodifiable.
+- Preserve the existing `ChangeNotifier` pattern. Do not add state management,
+  DI, routing, or architecture frameworks without the user's explicit
+  instruction.
+- Create services only for real I/O such as APIs, databases, files, or platform
+  integration. Do not create empty layers or speculative abstractions.
+- Do not change the established folder structure or dependency direction
+  without the user's explicit approval.
 
-## Konvensi kode
+## Code conventions
 
-- Gunakan package imports, bukan relative imports lintas file library.
-- File/directory: `snake_case`; class/enum/typedef: `UpperCamelCase`; variable,
-  parameter, dan method: `lowerCamelCase`.
-- Pertahankan nama peran arsitektur yang eksplisit, misalnya `Repository`,
-  `ViewModel`, `UiState`, dan `Screen`.
-- Ikuti seluruh strict analyzer dan lint di `analysis_options.yaml`.
-- Jangan menambah dependency baru kecuali benar-benar diminta atau disetujui
-  user.
+- Use package imports instead of relative imports across library files.
+- Files/directories use `snake_case`; classes/enums/typedefs use
+  `UpperCamelCase`; variables, parameters, and methods use `lowerCamelCase`.
+- Keep architectural roles explicit in names such as `Repository`,
+  `ViewModel`, `UiState`, and `Screen`.
+- Follow all strict analyzer and lint rules in `analysis_options.yaml`.
+- Do not add dependencies unless the user explicitly requests or approves them.
 
-## Testing dan definition of done
+## Testing and definition of done
 
-- Repository dan view model: unit test dengan fake yang terisolasi.
-- Komponen core: widget test untuk variant, state, interaction, semantics, dan
-  accessibility yang relevan.
-- Screen: widget test dengan dependency/fake yang di-inject.
-- Golden test hanya untuk kontrak visual yang stabil dan deterministik. Ubah
-  baseline hanya bila perubahan visual memang disengaja dan sudah diperiksa.
-- Format file yang berubah, lalu jalankan minimal:
+- Tests and previews are temporary. Create them only when useful for verifying
+  a change, run verification while the files exist, then remove all test code,
+  preview code, preview images/baselines, test screenshots, and directories
+  used only for tests/previews before completing the work.
+- Do not remove runtime assets or code used by the application merely because
+  they are images or use the word `preview` in an accessibility label.
+- The final repository must not retain test or preview directories. This also
+  applies to goldens and test failure artifacts.
+- Format changed files, then run at least:
 
   ```bash
   flutter analyze --no-pub
-  flutter test --no-pub
   ```
 
-- Sebelum menyatakan task selesai, pastikan tidak ada pengganti mentah untuk
-  komponen `Sr*`, custom component tanpa izin, deep import design system, atau
-  dependency yang melanggar arah layer. Jika salah satu verifikasi tidak dapat
-  dijalankan, jelaskan alasannya dengan jujur.
+- If temporary tests are created, run `flutter test --no-pub` before removing
+  all test files/directories.
 
-## Aturan review
+- Before declaring a task complete, ensure there are no raw substitutes for
+  `Sr*` components, unauthorized custom components, deep design-system imports,
+  or dependencies that violate layer direction. If any verification cannot be
+  run, explain why honestly.
 
-Anggap pelanggaran penggunaan core, pembuatan komponen kustom tanpa izin, dan
-pelanggaran dependency layer sebagai finding blocking. Jangan menyetujui atau
-menyatakan implementasi selesai sampai pelanggaran tersebut diperbaiki atau
-user memberikan pengecualian eksplisit.
+## Review rules
+
+Treat violations of core usage, unauthorized custom components, and dependency
+layer direction as blocking findings. Do not approve or declare an
+implementation complete until they are fixed or the user explicitly grants an
+exception.

@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:sr_pos/features/sale/domain/models/catalog_ingredient.dart';
 import 'package:sr_pos/features/sale/domain/models/sale_product.dart';
 import 'package:sr_pos/features/sale/domain/repositories/sale_repository.dart';
 import 'package:sr_pos/features/sale/presentation/view_models/sale_ui_state.dart';
@@ -7,12 +8,90 @@ final class SaleCubit extends Cubit<SaleUiState> {
   SaleCubit(this._saleRepository) : super(SaleUiState.initial());
 
   static const int _suggestedCashIncrement = 50000;
+  // assumption: seed the existing catalog example with a placeholder alert level.
+  final List<CatalogIngredient> _allCatalogIngredients = <CatalogIngredient>[
+    CatalogIngredient(name: 'Air Galon', unit: 'pcs', stockAlert: 1.0),
+  ];
 
   final SaleRepository _saleRepository;
   var _allProducts = const <SaleProduct>[];
   final Map<String, int> _quantities = <String, int>{};
   final Map<String, int> _customPrices = <String, int>{};
   final Map<String, String> _itemNotes = <String, String>{};
+
+  int get catalogIngredientCount => _allCatalogIngredients.length;
+
+  List<CatalogIngredient> get filteredCatalogIngredients {
+    final normalizedQuery = state.query.trim().toLowerCase();
+    return List<CatalogIngredient>.unmodifiable(
+      _allCatalogIngredients.where(
+        (ingredient) => ingredient.name.toLowerCase().contains(normalizedQuery),
+      ),
+    );
+  }
+
+  bool hasCatalogIngredient(String name, {String? excludingName}) {
+    final normalizedName = name.trim().toLowerCase();
+    final normalizedExcludedName = excludingName?.trim().toLowerCase();
+    return _allCatalogIngredients.any(
+      (ingredient) =>
+          ingredient.name.trim().toLowerCase() == normalizedName &&
+          ingredient.name.trim().toLowerCase() != normalizedExcludedName,
+    );
+  }
+
+  bool addCatalogIngredient(CatalogIngredient ingredient) {
+    final name = ingredient.name.trim();
+    final unit = ingredient.unit.trim();
+    if (name.isEmpty ||
+        unit.isEmpty ||
+        ingredient.stockAlert < 0 ||
+        !ingredient.stockAlert.isFinite ||
+        hasCatalogIngredient(name)) {
+      return false;
+    }
+
+    _allCatalogIngredients.add(
+      CatalogIngredient(
+        name: name,
+        unit: unit,
+        stockAlert: ingredient.stockAlert,
+        imageBytes: ingredient.imageBytes,
+      ),
+    );
+    _emitUpdatedState();
+    return true;
+  }
+
+  bool updateCatalogIngredient(
+    String currentName,
+    CatalogIngredient ingredient,
+  ) {
+    final normalizedCurrentName = currentName.trim().toLowerCase();
+    final index = _allCatalogIngredients.indexWhere(
+      (candidate) =>
+          candidate.name.trim().toLowerCase() == normalizedCurrentName,
+    );
+    final name = ingredient.name.trim();
+    final unit = ingredient.unit.trim();
+    if (index < 0 ||
+        name.isEmpty ||
+        unit.isEmpty ||
+        ingredient.stockAlert < 0 ||
+        !ingredient.stockAlert.isFinite ||
+        hasCatalogIngredient(name, excludingName: currentName)) {
+      return false;
+    }
+
+    _allCatalogIngredients[index] = CatalogIngredient(
+      name: name,
+      unit: unit,
+      stockAlert: ingredient.stockAlert,
+      imageBytes: ingredient.imageBytes,
+    );
+    _emitUpdatedState();
+    return true;
+  }
 
   static String formatRupiah(int amount) {
     final digits = amount.toString();

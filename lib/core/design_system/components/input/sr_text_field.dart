@@ -100,6 +100,10 @@ class SrTextField extends StatelessWidget {
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
       ),
+      errorBuilder: errorText == null
+          ? (context, message) =>
+                srInputErrorWidget(context, message, size: size)
+          : null,
       enabled: enabled,
       readOnly: readOnly,
       obscureText: obscureText,

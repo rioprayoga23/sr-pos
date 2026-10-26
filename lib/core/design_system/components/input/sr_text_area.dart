@@ -98,6 +98,10 @@ class SrTextArea extends StatelessWidget {
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
       ).copyWith(alignLabelWithHint: true),
+      errorBuilder: errorText == null
+          ? (context, message) =>
+                srInputErrorWidget(context, message, size: size)
+          : null,
       enabled: enabled,
       readOnly: readOnly,
       autofocus: autofocus,
